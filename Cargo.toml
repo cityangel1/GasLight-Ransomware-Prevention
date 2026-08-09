@@ -1,0 +1,45 @@
+[package]
+name = "gaslight-agent"
+version = "0.1.0"
+edition = "2021"
+description = "GasLight endpoint agent — telemetry, behavioral scoring, and mitigation for ransomware prevention."
+
+[[bin]]
+name = "gaslight-agent"
+path = "src/main.rs"
+
+[dependencies]
+# Cross-platform process enumeration (PID, parent PID, name, cmdline, start time, kill())
+sysinfo = "0.30"
+
+# Cross-platform filesystem watcher (inotify on Linux, ReadDirectoryChangesW on Windows, FSEvents on macOS)
+notify = "6.1"
+
+# Event (de)serialization for logging + dashboard streaming
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Config file (gaslight.toml)
+toml = "0.8"
+
+# Sync WebSocket server for the dashboard feed
+tungstenite = "0.21"
+
+# MPMC channel used as the central telemetry queue
+crossbeam-channel = "0.5"
+
+# Timestamps
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+
+# Only compiled in on Windows — real registry watching (Run keys, Defender policy, etc.)
+[target.'cfg(windows)'.dependencies]
+winreg = "0.52"
+
+# Only compiled in on Linux — fanotify FFI for PID-attributed file write
+# events (see collector/fanotify.rs). This is the one place a raw kernel
+# API is worth reaching for directly rather than staying purely
+# cross-platform: fanotify gives real per-process file attribution
+# entirely from user space, no kernel module required — something
+# Windows can't do without the minifilter driver in driver/.
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"
