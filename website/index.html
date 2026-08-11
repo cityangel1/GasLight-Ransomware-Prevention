@@ -8,21 +8,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:          #FFFFFF;
-  --bg-soft:     #F7F7F8;
-  --panel:       #FFFFFF;
-  --panel-2:     #F4F4F6;
-  --line:        #E3E3E7;
-  --line-soft:   #ECECEF;
-  --flame:       #0A0A0C;
-  --flame-bright:#2E2E33;
-  --safe:        #1F8F5A;
-  --danger:      #C42B3B;
-  --brass:       #75757C;
-  --brass-light: #4A4A50;
-  --text:        #0A0A0C;
-  --text-dim:    #55555C;
-  --text-faint:  #8A8A92;
+  --bg:          #0A0B0E;
+  --bg-soft:     #0E1013;
+  --panel:       #14161B;
+  --panel-2:     #1B1E24;
+  --line:        rgba(255,255,255,0.10);
+  --line-soft:   rgba(255,255,255,0.06);
+  --flame:       #FF7A33;
+  --flame-bright:#FFA35C;
+  --flame-dim:   #C25A21;
+  --safe:        #34D399;
+  --danger:      #FB5D5D;
+  --brass:       #8A8F98;
+  --brass-light: #B7BBC3;
+  --text:        #F2F3F5;
+  --text-dim:    #A3A8B1;
+  --text-faint:  #686D77;
   --mono:        "JetBrains Mono", monospace;
   --disp:        "Space Grotesk", sans-serif;
   --body:        "Inter", sans-serif;
@@ -32,16 +33,16 @@ html{scroll-behavior:smooth;}
 body{
   background:var(--bg); color:var(--text); font-family:var(--body); line-height:1.55; overflow-x:hidden;
 }
-::selection{ background:var(--flame); color:#FFFFFF; }
+::selection{ background:var(--flame); color:#0A0B0E; }
 a{ color:inherit; text-decoration:none; }
 .wrap{ max-width:1240px; margin:0 auto; padding:0 32px; }
 @media(max-width:700px){ .wrap{ padding:0 20px; } }
 h1,h2,h3{ font-family:var(--disp); font-weight:700; letter-spacing:-0.01em; }
-:focus-visible{ outline:2px solid var(--flame); outline-offset:3px; border-radius:4px; }
+:focus-visible{ outline:2px solid var(--flame-bright); outline-offset:3px; border-radius:4px; }
 @media (prefers-reduced-motion: reduce){ *{ animation-duration:.001ms !important; transition-duration:.001ms !important; scroll-behavior:auto !important; } }
 
 /* ============ NAV ============ */
-nav{ position:fixed; top:0; left:0; right:0; z-index:50; background:rgba(255,255,255,0.78); backdrop-filter:blur(12px); border-bottom:1px solid var(--line-soft); }
+nav{ position:fixed; top:0; left:0; right:0; z-index:50; background:rgba(10,11,14,0.78); backdrop-filter:blur(12px); border-bottom:1px solid var(--line-soft); }
 nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:68px; }
 .brand{ display:flex; align-items:center; gap:9px; font-family:var(--disp); font-weight:800; font-size:15px; letter-spacing:0.02em; }
 .brand svg{ width:19px; height:19px; }
@@ -53,8 +54,8 @@ nav .wrap{ display:flex; align-items:center; justify-content:space-between; heig
 
 .btn{ font-weight:700; font-size:13px; padding:11px 20px; border-radius:8px; cursor:pointer; border:1px solid var(--line); background:var(--panel-2); color:var(--text); display:inline-flex; align-items:center; gap:8px; transition:all .15s; }
 .btn:hover{ border-color:var(--flame); }
-.btn-primary{ background:var(--flame); color:#fff; border-color:transparent; }
-.btn-primary:hover{ background:var(--flame-bright); box-shadow:0 8px 22px -6px rgba(10,10,11,0.55); }
+.btn-primary{ background:var(--flame); color:#0A0B0E; border-color:transparent; }
+.btn-primary:hover{ background:var(--flame-bright); box-shadow:0 8px 22px -6px rgba(255,122,51,0.45); }
 .btn-lg{ padding:16px 30px; font-size:14.5px; }
 
 /* ============ HERO — Hobro-Digital-style bold overlay ============ */
@@ -65,15 +66,22 @@ nav .wrap{ display:flex; align-items:center; justify-content:space-between; heig
 .hero-bg{
   position:absolute; inset:0; z-index:0;
   background:
-    radial-gradient(ellipse 900px 620px at 50% 15%, rgba(10,10,11,0.05), transparent 60%),
-    radial-gradient(ellipse 700px 500px at 85% 85%, rgba(31,143,90,0.05), transparent 55%),
-    linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 55%, #FFFFFF 100%);
+    radial-gradient(ellipse 900px 620px at 50% 10%, rgba(255,122,51,0.16), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 85% 85%, rgba(52,211,153,0.06), transparent 55%),
+    linear-gradient(180deg, #0A0B0E 0%, #0E0F13 55%, #0A0B0E 100%);
+  animation:flicker 7s ease-in-out infinite;
+}
+@keyframes flicker{
+  0%,100%{ opacity:1; }
+  38%{ opacity:0.92; }
+  52%{ opacity:1; }
+  61%{ opacity:0.95; }
 }
 .hero-grid{
-  position:absolute; inset:0; z-index:0; opacity:0.5;
+  position:absolute; inset:0; z-index:0; opacity:0.6;
   background-image:
-    linear-gradient(rgba(10,10,11,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(10,10,11,0.04) 1px, transparent 1px);
+    linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
   background-size:64px 64px;
   mask-image:radial-gradient(ellipse 700px 500px at 50% 30%, black, transparent 75%);
 }
@@ -106,12 +114,12 @@ nav .wrap{ display:flex; align-items:center; justify-content:space-between; heig
   display:flex; align-items:center; gap:12px; padding:16px 26px; border-radius:12px; border:1px solid var(--line);
   background:var(--panel); transition:all .18s; min-width:220px; text-align:left;
 }
-.os-btn.primary{ border-color:var(--flame); background:linear-gradient(160deg, rgba(10,10,11,0.1), var(--panel)); }
+.os-btn.primary{ border-color:var(--flame); background:linear-gradient(160deg, rgba(255,122,51,0.14), var(--panel)); }
 .rec-tag{
-  position:absolute; top:-11px; left:16px; background:var(--flame); color:#fff; font-family:var(--mono); font-size:9px;
+  position:absolute; top:-11px; left:16px; background:var(--flame); color:#0A0B0E; font-family:var(--mono); font-size:9px;
   font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:3px 9px; border-radius:20px;
 }
-.os-btn:hover{ border-color:var(--flame); transform:translateY(-2px); box-shadow:0 14px 32px -12px rgba(0,0,0,0.5); }
+.os-btn:hover{ border-color:var(--flame); transform:translateY(-2px); box-shadow:0 14px 32px -12px rgba(255,122,51,0.35); }
 .os-btn .ic{ width:34px; height:34px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
 .os-btn .ic svg{ width:26px; height:26px; }
 .os-btn .label{ font-family:var(--mono); font-size:9.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.08em; }
@@ -165,7 +173,7 @@ footer .foot-links a:hover{ color:var(--text); }
 <nav>
   <div class="wrap">
     <div class="brand">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c-3 4-6 6.5-6 10.5A6 6 0 0 0 12 19a6 6 0 0 0 6-6.5C18 8.5 15 6 12 2z" fill="#0A0A0C"/></svg>
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c-3 4-6 6.5-6 10.5A6 6 0 0 0 12 19a6 6 0 0 0 6-6.5C18 8.5 15 6 12 2z" fill="#FF7A33"/></svg>
       GASLIGHT
     </div>
     <div class="nav-links">
@@ -188,7 +196,7 @@ footer .foot-links a:hover{ color:var(--text); }
     <h1>GAS<span class="accent">LIGHT</span></h1>
     <div class="hero-caps">
       <span>ENDPOINT · BEHAVIORAL · DECEPTION</span>
-      <span>WINDOWS &amp; LINUX</span>
+      <span>LINUX</span>
       <span>OPEN SOURCE</span>
     </div>
     <p class="hero-desc">
