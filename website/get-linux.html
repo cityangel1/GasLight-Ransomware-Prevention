@@ -8,21 +8,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:          #FFFFFF;
-  --bg-soft:     #F7F7F8;
-  --panel:       #FFFFFF;
-  --panel-2:     #F4F4F6;
-  --line:        #E3E3E7;
-  --line-soft:   #ECECEF;
-  --flame:       #0A0A0C;
-  --flame-bright:#2E2E33;
-  --safe:        #1F8F5A;
-  --watch:       #A6790A;
-  --danger:      #C42B3B;
-  --brass:       #75757C;
-  --text:        #0A0A0C;
-  --text-dim:    #55555C;
-  --text-faint:  #8A8A92;
+  --bg:          #0A0B0E;
+  --bg-soft:     #0E1013;
+  --panel:       #14161B;
+  --panel-2:     #1B1E24;
+  --line:        rgba(255,255,255,0.10);
+  --line-soft:   rgba(255,255,255,0.06);
+  --flame:       #FF7A33;
+  --flame-bright:#FFA35C;
+  --safe:        #34D399;
+  --watch:       #F2B84B;
+  --danger:      #FB5D5D;
+  --brass:       #8A8F98;
+  --text:        #F2F3F5;
+  --text-dim:    #A3A8B1;
+  --text-faint:  #686D77;
   --mono:        "JetBrains Mono", monospace;
   --disp:        "Space Grotesk", sans-serif;
   --body:        "Inter", sans-serif;
@@ -30,15 +30,15 @@
 *{box-sizing:border-box; margin:0; padding:0;}
 html{scroll-behavior:smooth;}
 body{ background:var(--bg); color:var(--text); font-family:var(--body); line-height:1.6; }
-::selection{ background:var(--flame); color:#FFFFFF; }
+::selection{ background:var(--flame); color:#0A0B0E; }
 a{ color:inherit; }
 .wrap{ max-width:820px; margin:0 auto; padding:0 32px; }
 @media(max-width:600px){ .wrap{ padding:0 20px; } }
 h1,h2,h3{ font-family:var(--disp); font-weight:700; letter-spacing:-0.01em; }
 code, pre{ font-family:var(--mono); }
-:focus-visible{ outline:2px solid var(--flame); outline-offset:3px; border-radius:4px; }
+:focus-visible{ outline:2px solid var(--flame-bright); outline-offset:3px; border-radius:4px; }
 
-nav{ position:sticky; top:0; z-index:50; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--line-soft); }
+nav{ position:sticky; top:0; z-index:50; background:rgba(10,11,14,0.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--line-soft); }
 nav .wrap{ max-width:1100px; display:flex; align-items:center; justify-content:space-between; height:64px; }
 .brand{ display:flex; align-items:center; gap:9px; font-family:var(--disp); font-weight:800; font-size:14.5px; }
 .brand svg{ width:18px; height:18px; }
@@ -48,7 +48,7 @@ nav .wrap{ max-width:1100px; display:flex; align-items:center; justify-content:s
 .nav-links a:hover{ color:var(--text); }
 @media(max-width:600px){ .nav-links{ display:none; } }
 
-header.page-hero{ padding:72px 0 48px; text-align:center; border-bottom:1px solid var(--line-soft); background:radial-gradient(ellipse 700px 300px at 50% 0%, rgba(10,10,11,0.1), transparent 65%); }
+header.page-hero{ padding:72px 0 48px; text-align:center; border-bottom:1px solid var(--line-soft); background:radial-gradient(ellipse 700px 300px at 50% 0%, rgba(255,122,51,0.12), transparent 65%); }
 .os-badge{ display:inline-flex; align-items:center; gap:10px; padding:8px 16px; border-radius:20px; background:var(--panel); border:1px solid var(--line); font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--brass); margin-bottom:24px; }
 .os-badge svg{ width:15px; height:15px; }
 header.page-hero h1{ font-size:clamp(32px,5.5vw,52px); letter-spacing:-0.02em; }
@@ -74,16 +74,16 @@ pre .c{ color:var(--text-faint); }
 .inline-code{ font-family:var(--mono); font-size:12.5px; background:var(--panel-2); border:1px solid var(--line-soft); padding:2px 7px; border-radius:5px; }
 
 .callout{ display:flex; gap:12px; padding:16px 18px; border-radius:10px; margin-top:14px; font-size:13px; }
-.callout.info{ background:rgba(217,164,33,0.07); border:1px solid rgba(217,164,33,0.22); color:var(--text-dim); }
+.callout.info{ background:rgba(242,184,75,0.08); border:1px solid rgba(242,184,75,0.25); color:var(--text-dim); }
 .callout.info b{ color:var(--watch); }
-.callout.safe{ background:rgba(47,168,107,0.07); border:1px solid rgba(47,168,107,0.22); color:var(--text-dim); }
+.callout.safe{ background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.25); color:var(--text-dim); }
 .callout.safe b{ color:var(--safe); }
-.callout.danger{ background:rgba(229,48,59,0.07); border:1px solid rgba(229,48,59,0.22); color:var(--text-dim); }
+.callout.danger{ background:rgba(251,93,93,0.08); border:1px solid rgba(251,93,93,0.25); color:var(--text-dim); }
 .callout.danger b{ color:var(--danger); }
 
 .btn{ font-weight:700; font-size:13px; padding:12px 22px; border-radius:8px; cursor:pointer; border:1px solid var(--line); background:var(--panel-2); color:var(--text); display:inline-flex; align-items:center; gap:8px; text-decoration:none; transition:all .15s; }
 .btn:hover{ border-color:var(--flame); }
-.btn-primary{ background:var(--flame); color:#fff; border-color:transparent; }
+.btn-primary{ background:var(--flame); color:#0A0B0E; border-color:transparent; }
 .btn-primary:hover{ background:var(--flame-bright); }
 .cta-row{ display:flex; gap:12px; margin-top:36px; flex-wrap:wrap; }
 
@@ -105,7 +105,7 @@ footer .fine{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint)
 <nav>
   <div class="wrap">
     <div class="brand"><a href="index.html">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c-3 4-6 6.5-6 10.5A6 6 0 0 0 12 19a6 6 0 0 0 6-6.5C18 8.5 15 6 12 2z" fill="#0A0A0C"/></svg>
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c-3 4-6 6.5-6 10.5A6 6 0 0 0 12 19a6 6 0 0 0 6-6.5C18 8.5 15 6 12 2z" fill="#FF7A33"/></svg>
       GASLIGHT
     </a></div>
     <div class="nav-links">
@@ -168,17 +168,6 @@ cargo test --release</pre>
           </table>
         </div>
         <div class="callout info"><span><b>Not a crash either way.</b> The agent probes fanotify availability at startup and logs which mode it's running in — check for <span class="inline-code">[fanotify] PID-attributed write monitor active</span> vs. <span class="inline-code">[fanotify] not available</span> in the console.</span></div>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num">4</div>
-      <div class="step-body">
-        <h3>Open the dashboard</h3>
-        <p>Open <span class="inline-code">dashboard.html</span> (or <span class="inline-code">website/dashboard.html</span> if you're running from a full clone) in any browser — no server, no build step. The connection indicator should flip to <b style="color:var(--safe)">LIVE</b>.</p>
-        <div class="cta-row">
-          <a class="btn" href="dashboard.html">Preview the dashboard →</a>
-        </div>
       </div>
     </div>
 
