@@ -1,0 +1,77 @@
+# GasLight Endpoint Agent — configuration
+# Copy/edit this file next to the compiled binary. If it's missing at startup,
+# built-in defaults (matching the values below) are used instead.
+
+[file]
+# Directories to recursively watch for file activity.
+# On Windows you'd typically point this at user profile / shared drives, e.g.:
+#   watch_paths = ["C:\\Users", "D:\\Data"]
+watch_paths = ["./watched"]
+
+# How many bytes to read from the start of a written file when computing
+# Shannon entropy. Keeping this small keeps the agent's overhead low even
+# on very large files.
+entropy_sample_bytes = 65536
+
+[process]
+# How often (ms) the process monitor polls the OS process table for
+# start/exit diffs. Lower = more responsive, higher = less CPU overhead.
+poll_interval_ms = 500
+
+[detector]
+# Weights matching the worked example in the behavioral-engine architecture
+# doc. Raw contributions sum to at most 125 and are normalized to 0-100.
+files_per_second_weight = 25.0
+entropy_weight = 20.0
+delete_weight = 15.0
+rename_burst_weight = 15.0
+honey_file_weight = 40.0
+registry_persistence_weight = 10.0
+
+# Shannon entropy at/above this is treated as a genuine encryption spike —
+# but only if the file's extension isn't already a high-baseline-entropy
+# format (zip/jpg/mp4/etc — see behavior/entropy.rs), so ordinary
+# compression/media activity doesn't get misread as ransomware.
+entropy_spike_threshold = 7.8
+
+# Risk bands (Safe/Monitor/Warning/High Risk/Critical) and their decisions
+# (Allow/Monitor/Alert/Suspend/Terminate) are fixed at 25/50/70/85 per the
+# architecture doc rather than configurable here — see behavior/rules.rs.
+
+[dashboard]
+# Port the WebSocket telemetry feed is served on.
+# Connect a browser dashboard to ws://127.0.0.1:<port>
+port = 7878
+
+[logging]
+# Where the rotating event log is written.
+log_path = "./gaslight-agent.log"
+# Rotate once the active log file passes this size.
+max_log_bytes = 5242880  # 5 MB
+
+[deception]
+# Root folders to scatter decoys under. Deliberately the same folders as
+# file.watch_paths above by default — a decoy touch and a real-protected
+# activity get equal visibility to the behavioral engine.
+roots = ["./watched"]
+# Honey files placed per generated directory (Documents, Finance,
+# Finance/Payroll, HR, Legal/Contracts, Backups, Executive).
+files_per_directory = 2
+# Simulated (not real) network-share-style decoys — see deception/shares.rs.
+enable_shares = false
+# Rotate (delete + regenerate) decoys older than this many hours.
+rotation_hours = 24
+
+[enforcement]
+# Real, Linux-only, fanotify-permission-based write blocking. OFF BY
+# DEFAULT — read src/enforcement/fanotify_guard.rs's module doc comment
+# before setting this to true. Short version: enabling this means every
+# file open under watch_paths waits for this agent to respond ALLOW or
+# DENY. A bug means that open() call hangs forever, not just "fails to
+# protect." It's fail-open by design (only a PID explicitly flagged by
+# the behavioral engine gets denied — everything else is allowed
+# immediately) and only marks the exact configured watch_paths, not the
+# whole filesystem, but it is still a fundamentally different risk
+# category than every other collector in this project. Needs root
+# (CAP_SYS_ADMIN) regardless of this setting.
+enabled = false

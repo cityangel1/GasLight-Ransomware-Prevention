@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GasLight — Predict. Deceive. Protect.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+
+/* ============ TOKENS ============ */
+:root{
+  --bg:          #FFFFFF;
+  --bg-soft:     #F7F7F8;
+  --panel:       #FFFFFF;
+  --panel-2:     #F4F4F6;
+  --line:        #E3E3E7;
+  --line-soft:   #ECECEF;
+  --flame:       #0A0A0C;
+  --flame-bright:#2E2E33;
+  --flame-dim:   #C7C7CC;
+  --safe:        #1F8F5A;
+  --safe-dim:    #156B44;
+  --danger:      #C42B3B;
+  --brass:       #75757C;
+  --brass-light: #4A4A50;
+  --text:        #0A0A0C;
+  --text-dim:    #55555C;
+  --text-faint:  #8A8A92;
+  --mono:        "JetBrains Mono", monospace;
+  --disp:        "Space Grotesk", sans-serif;
+  --body:        "Inter", sans-serif;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--body);
+  line-height:1.55;
+  overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(10,10,11,0.08), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 10%, rgba(47,168,107,0.05), transparent 55%);
+}
+::selection{ background:var(--flame); color:#FFFFFF; }
+
+.wrap{ max-width:1180px; margin:0 auto; padding:0 32px; }
+@media(max-width:700px){ .wrap{padding:0 20px;} }
+
+a{color:inherit;}
+h1,h2,h3,h4{font-family:var(--disp); font-weight:600; letter-spacing:-0.01em;}
+
+/* focus visibility */
+:focus-visible{ outline:2px solid var(--flame); outline-offset:3px; border-radius:4px; }
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important; }
+}
+
+/* ============ NAV ============ */
+nav{
+  position:fixed; top:0; left:0; right:0; z-index:50;
+  backdrop-filter:blur(14px);
+  background:rgba(255,255,255,0.78);
+  border-bottom:1px solid var(--line-soft);
+}
+nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:64px; }
+.brand{ display:flex; align-items:center; gap:10px; font-family:var(--disp); font-weight:700; font-size:15px; letter-spacing:0.06em; }
+.brand svg{ width:20px; height:20px; }
+.brand .v{
+  font-family:var(--mono); font-size:9px; letter-spacing:0.08em; font-weight:700;
+  color:var(--flame); background:rgba(10,10,11,0.1); border:1px solid rgba(10,10,11,0.28);
+  padding:2px 7px; border-radius:20px; margin-left:6px;
+}
+.nav-links{ display:flex; gap:28px; font-size:13px; color:var(--text-dim); }
+.nav-links a{ text-decoration:none; transition:color .2s; }
+.nav-links a:hover{ color:var(--flame-bright); }
+.nav-status{
+  display:flex; align-items:center; gap:7px; font-family:var(--mono); font-size:10px;
+  color:var(--safe); border:1px solid rgba(47,168,107,0.25); background:rgba(47,168,107,0.06);
+  padding:6px 11px; border-radius:20px;
+}
+.nav-status .dot{ width:6px; height:6px; border-radius:50%; background:var(--safe); box-shadow:0 0 8px var(--safe); animation:pulse-dot 2s infinite; }
+@keyframes pulse-dot{ 50%{ opacity:0.35; } }
+@media(max-width:820px){ .nav-links{display:none;} }
+
+/* ============ HERO ============ */
+header.hero{
+  padding:168px 0 100px;
+  position:relative;
+}
+.hero-grid{
+  display:grid; grid-template-columns:1.15fr 0.85fr; gap:56px; align-items:center;
+}
+@media(max-width:900px){ .hero-grid{ grid-template-columns:1fr; } }
+
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+  color:var(--flame); display:flex; align-items:center; gap:9px; margin-bottom:22px;
+}
+.eyebrow::before{ content:""; width:22px; height:1px; background:var(--flame); }
+
+.hero h1{
+  font-size:clamp(48px,7vw,84px); line-height:0.95; letter-spacing:-0.03em;
+  background:linear-gradient(180deg, var(--text) 30%, var(--brass-light) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.hero .tagline{
+  font-family:var(--disp); font-weight:500; font-size:19px; color:var(--text-dim);
+  margin-top:22px; max-width:480px;
+}
+.hero p.desc{
+  margin-top:18px; font-size:15px; color:var(--text-faint); max-width:490px;
+}
+.hero-ctas{ display:flex; gap:14px; margin-top:36px; flex-wrap:wrap; }
+.hero-note{ margin-top:16px; font-family:var(--mono); font-size:11.5px; color:var(--text-faint); }
+.hero-note a{ color:var(--flame); text-decoration:none; font-weight:600; }
+.hero-note a:hover{ text-decoration:underline; }
+
+.btn{
+  font-family:var(--body); font-weight:600; font-size:13.5px; padding:13px 22px; border-radius:9px;
+  cursor:pointer; border:1px solid transparent; display:inline-flex; align-items:center; gap:8px;
+  transition:transform .15s, box-shadow .15s, background .2s;
+}
+.btn:active{ transform:translateY(1px); }
+.btn-primary{
+  background:linear-gradient(180deg, var(--flame-bright), var(--flame));
+  color:#FFFFFF; box-shadow:0 8px 24px -8px rgba(10,10,11,0.5);
+}
+.btn-primary:hover{ box-shadow:0 10px 28px -6px rgba(10,10,11,0.65); }
+.btn-ghost{
+  background:transparent; border:1px solid var(--line); color:var(--text-dim);
+}
+.btn-ghost:hover{ border-color:var(--brass); color:var(--text); }
+
+/* --- Lamp / flame signature --- */
+.lamp-stage{
+  position:relative; display:flex; align-items:center; justify-content:center;
+  height:420px;
+}
+.lamp-frame{ position:relative; width:220px; }
+.lamp-glass{
+  width:150px; height:190px; margin:0 auto;
+  border-radius:70px 70px 26px 26px / 90px 90px 26px 26px;
+  border:2px solid rgba(134,134,141,0.55);
+  background:radial-gradient(ellipse at 50% 30%, rgba(10,10,11,0.16), rgba(20,15,9,0.4) 70%);
+  position:relative; overflow:hidden;
+  box-shadow:inset 0 0 40px rgba(0,0,0,0.5), 0 0 70px 10px rgba(10,10,11,0.14);
+  transition:box-shadow .6s ease;
+}
+.lamp-glass.safe{ box-shadow:inset 0 0 40px rgba(0,0,0,0.5), 0 0 70px 10px rgba(47,168,107,0.16); }
+.flame{
+  position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+  width:46px; height:74px;
+  background:radial-gradient(circle at 50% 78%, #FFFFFF 0%, var(--flame-bright) 30%, var(--flame) 58%, var(--flame-dim) 82%, transparent 100%);
+  border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+  filter:blur(0.3px);
+  animation:flicker 2.6s ease-in-out infinite;
+  transition:background 1s ease;
+}
+.flame.alarmed{
+  animation:flicker-hot 0.35s ease-in-out infinite;
+  background:radial-gradient(circle at 50% 78%, #fff2d8 0%, #ffb15e 25%, var(--danger) 60%, #9c1f34 88%, transparent 100%);
+}
+.flame.safe{
+  animation:flicker-calm 3.4s ease-in-out infinite;
+  background:radial-gradient(circle at 50% 78%, #eafff5 0%, #8ff0c4 28%, var(--safe) 58%, var(--safe-dim) 85%, transparent 100%);
+}
+@keyframes flicker{
+  0%,100%{ transform:translateX(-50%) scaleY(1) scaleX(1) rotate(0deg); }
+  25%{ transform:translateX(-52%) scaleY(1.05) scaleX(0.96) rotate(-1.5deg); }
+  50%{ transform:translateX(-49%) scaleY(0.94) scaleX(1.02) rotate(1deg); }
+  75%{ transform:translateX(-51%) scaleY(1.03) scaleX(0.98) rotate(-0.5deg); }
+}
+@keyframes flicker-hot{
+  0%,100%{ transform:translateX(-50%) scaleY(1) scaleX(1); }
+  30%{ transform:translateX(-56%) scaleY(1.18) scaleX(0.82) rotate(-5deg); }
+  60%{ transform:translateX(-44%) scaleY(0.82) scaleX(1.12) rotate(4deg); }
+  80%{ transform:translateX(-53%) scaleY(1.1) scaleX(0.9) rotate(-3deg); }
+}
+@keyframes flicker-calm{
+  0%,100%{ transform:translateX(-50%) scaleY(1) scaleX(1); }
+  50%{ transform:translateX(-50%) scaleY(1.02) scaleX(0.99); }
+}
+.lamp-base{
+  width:180px; height:20px; margin:0 auto; background:linear-gradient(180deg, var(--brass-light), var(--brass) 60%, #3A3A40);
+  border-radius:6px; box-shadow:0 6px 18px rgba(0,0,0,0.28);
+}
+.lamp-neck{ width:24px; height:26px; margin:0 auto; background:linear-gradient(180deg, var(--brass-light), var(--brass)); }
+.lamp-cap{ width:60px; height:16px; margin:0 auto; background:linear-gradient(180deg, var(--brass-light), var(--brass)); border-radius:4px 4px 0 0; }
+
+.lamp-readout{
+  position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); width:280px;
+  font-family:var(--mono); font-size:10.5px; text-align:center; color:var(--text-faint);
+}
+.lamp-readout .status-line{ color:var(--flame); font-weight:700; letter-spacing:0.04em; }
+.lamp-readout .status-line.safe{ color:var(--safe); }
+
+/* ============ SECTION SHELL ============ */
+section{ padding:104px 0; position:relative; }
+.section-head{ max-width:640px; margin-bottom:52px; }
+.section-num{
+  font-family:var(--mono); font-size:11px; color:var(--flame); letter-spacing:0.1em; margin-bottom:14px; display:block;
+}
+.section-head h2{ font-size:clamp(28px,4vw,40px); letter-spacing:-0.02em; }
+.section-head p{ color:var(--text-dim); margin-top:14px; font-size:15px; max-width:560px; }
+hr.div{ border:0; height:1px; background:linear-gradient(90deg, transparent, var(--line), transparent); }
+
+/* ============ KILL CHAIN ============ */
+.chain{
+  display:grid; grid-template-columns:1fr auto 1fr; gap:0; align-items:stretch;
+}
+@media(max-width:820px){ .chain{ grid-template-columns:1fr; } .chain-vs{ margin:20px auto; } }
+.chain-col{
+  background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:28px;
+}
+.chain-col.threat{ border-color:rgba(229,48,59,0.25); }
+.chain-col.defense{ border-color:rgba(47,168,107,0.25); }
+.chain-label{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:18px;
+  display:flex; align-items:center; gap:8px;
+}
+.chain-col.threat .chain-label{ color:var(--danger); }
+.chain-col.defense .chain-label{ color:var(--safe); }
+.chain-step{ display:flex; gap:14px; padding:14px 0; border-top:1px solid var(--line-soft); }
+.chain-step:first-of-type{ border-top:none; }
+.chain-step .n{ font-family:var(--mono); font-size:11px; color:var(--text-faint); padding-top:2px; }
+.chain-step .t{ font-size:13.5px; font-weight:600; margin-bottom:3px; }
+.chain-step .d{ font-size:12.5px; color:var(--text-dim); }
+.chain-vs{
+  display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%;
+  background:var(--panel-2); border:1px solid var(--line); font-family:var(--mono); font-size:11px; color:var(--text-faint);
+  align-self:center; margin:0 -22px; z-index:2; position:relative;
+}
+
+/* ============ MODULES ============ */
+.mod-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
+@media(max-width:980px){ .mod-grid{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:560px){ .mod-grid{ grid-template-columns:1fr; } }
+.mod-card{
+  background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px;
+  cursor:pointer; text-align:left; transition:all .2s; display:flex; flex-direction:column; justify-content:space-between; min-height:168px;
+  color:inherit; font-family:inherit;
+}
+.mod-card:hover, .mod-card.active{ border-color:var(--flame); background:var(--panel-2); transform:translateY(-3px); }
+.mod-card .ic{
+  width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+  background:rgba(10,10,11,0.08); border:1px solid rgba(10,10,11,0.2); color:var(--flame); margin-bottom:14px;
+}
+.mod-card h4{ font-size:13.5px; margin-bottom:4px; }
+.mod-card .tech{ font-family:var(--mono); font-size:10px; color:var(--text-faint); }
+.mod-card .go{ font-size:10.5px; color:var(--flame); margin-top:14px; font-weight:600; display:flex; align-items:center; gap:5px; }
+
+.mod-detail{
+  margin-top:24px; background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:32px;
+  display:none;
+}
+.mod-detail.open{ display:block; animation:reveal .35s ease; }
+@keyframes reveal{ from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);} }
+.mod-detail .kicker{ font-family:var(--mono); font-size:10.5px; color:var(--flame); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px; }
+.mod-detail h3{ font-size:22px; }
+.mod-detail .sub{ font-family:var(--mono); font-size:12px; color:var(--text-faint); margin-top:4px; }
+.mod-detail .stack{
+  margin-top:18px; display:inline-flex; align-items:center; gap:10px; background:var(--panel-2); border:1px solid var(--line);
+  padding:9px 14px; border-radius:9px; font-family:var(--mono); font-size:11.5px; color:var(--brass-light);
+}
+.mod-detail p.desc{ margin-top:20px; color:var(--text-dim); font-size:14px; max-width:640px; }
+.mod-detail ul{ margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; }
+@media(max-width:700px){ .mod-detail ul{ grid-template-columns:1fr; } }
+.mod-detail li{ font-size:13px; color:var(--text-dim); list-style:none; padding-left:16px; position:relative; }
+.mod-detail li::before{ content:"—"; position:absolute; left:0; color:var(--flame); }
+
+/* ============ PIPELINE ============ */
+.pipeline{ position:relative; }
+.pipeline-track{
+  position:absolute; top:29px; left:6%; right:6%; height:1px;
+  background:repeating-linear-gradient(90deg, var(--flame) 0 6px, transparent 6px 12px);
+  opacity:0.4;
+}
+.pipeline-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; position:relative; }
+@media(max-width:900px){ .pipeline-grid{ grid-template-columns:1fr 1fr; } .pipeline-track{ display:none; } }
+@media(max-width:560px){ .pipeline-grid{ grid-template-columns:1fr; } }
+.pipe-step{ background:var(--bg-soft); border:1px solid var(--line); border-radius:14px; padding:20px; position:relative; }
+.pipe-num{
+  width:24px; height:24px; border-radius:50%; background:var(--panel); border:1px solid var(--flame); color:var(--flame);
+  font-family:var(--mono); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; margin-bottom:16px;
+}
+.pipe-step h4{ font-size:13.5px; margin-bottom:6px; }
+.pipe-step .d{ font-size:12px; color:var(--text-dim); margin-bottom:12px; }
+.pipe-step .detail{
+  font-family:var(--mono); font-size:10.5px; color:var(--text-faint); background:var(--panel); border:1px solid var(--line-soft);
+  padding:9px 10px; border-radius:8px;
+}
+
+/* ============ SCORER MATRIX ============ */
+.matrix-layout{ display:grid; grid-template-columns:1.5fr 1fr; gap:32px; align-items:start; }
+@media(max-width:980px){ .matrix-layout{ grid-template-columns:1fr; } }
+.feature-row{
+  background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin-bottom:12px;
+}
+.feature-row .top{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:8px; }
+.feature-row h4{ font-size:13.5px; }
+.feature-row .metric{ font-family:var(--mono); font-size:9.5px; color:var(--text-faint); background:var(--panel-2); padding:2px 8px; border-radius:20px; border:1px solid var(--line-soft); }
+.feature-row .why{ font-size:12.5px; color:var(--text-dim); margin-bottom:12px; }
+.feature-row .patterns{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+@media(max-width:600px){ .feature-row .patterns{ grid-template-columns:1fr; } }
+.feature-row .pattern{ font-size:11px; padding:8px 10px; border-radius:8px; display:flex; gap:6px; }
+.feature-row .pattern.bad{ background:rgba(229,48,59,0.07); color:#C42B3B; border:1px solid rgba(229,48,59,0.16); }
+.feature-row .pattern.good{ background:rgba(47,168,107,0.06); color:#156B44; border:1px solid rgba(47,168,107,0.16); }
+.slider-row{ display:flex; align-items:center; gap:14px; }
+.slider-row input[type=range]{
+  flex:1; accent-color:var(--flame); height:4px; background:var(--panel-2); border-radius:4px; cursor:pointer;
+}
+.slider-row .val{ font-family:var(--mono); font-size:11px; color:var(--flame); font-weight:700; min-width:64px; text-align:right; }
+
+.score-panel{
+  position:sticky; top:90px; background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:26px;
+}
+.score-panel .kicker{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;}
+.score-panel h4{ font-size:14px; margin-bottom:18px; }
+.gauge-wrap{ position:relative; width:100%; height:14px; background:var(--panel-2); border-radius:10px; overflow:hidden; border:1px solid var(--line-soft); }
+.gauge-fill{ height:100%; border-radius:10px; background:linear-gradient(90deg, var(--safe), var(--flame) 60%, var(--danger)); width:5%; transition:width .35s ease; }
+.gauge-num{ font-family:var(--mono); font-size:34px; font-weight:700; margin-top:14px; }
+.gauge-label{ font-family:var(--mono); font-size:11px; color:var(--text-faint); margin-top:2px; }
+.score-panel .scenario{
+  margin-top:20px; padding-top:18px; border-top:1px solid var(--line-soft); font-size:11.5px; color:var(--text-dim); line-height:1.6;
+}
+.score-panel .scenario b{ color:var(--text); }
+.reset-link{ font-family:var(--mono); font-size:10.5px; color:var(--flame); background:none; border:1px solid rgba(10,10,11,0.25); padding:7px 12px; border-radius:8px; cursor:pointer; margin-top:16px; }
+.reset-link:hover{ border-color:var(--flame); }
+
+/* ============ DECEPTION / BAIT ============ */
+.bait-layout{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:28px; }
+@media(max-width:900px){ .bait-layout{ grid-template-columns:1fr; } }
+.bait-note{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:26px; }
+.bait-note h4{ font-size:14px; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.bait-note p{ font-size:13px; color:var(--text-dim); }
+.bait-note .callout{
+  margin-top:18px; background:var(--panel-2); border:1px solid var(--line-soft); border-radius:10px; padding:14px; font-size:12px; color:var(--text-dim);
+}
+.bait-note .callout b{ color:var(--brass-light); }
+.bait-list{ display:flex; flex-direction:column; gap:10px; }
+.bait-item{
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.bait-item .left{ display:flex; align-items:center; gap:12px; min-width:0; }
+.bait-item .ic{ width:32px; height:32px; border-radius:8px; background:var(--panel-2); border:1px solid var(--line-soft); display:flex; align-items:center; justify-content:center; color:var(--flame); flex-shrink:0; }
+.bait-item .name{ font-size:12.5px; font-weight:600; font-family:var(--mono); }
+.bait-item .path{ font-size:10.5px; color:var(--text-faint); font-family:var(--mono); }
+.bait-item .conf{ font-family:var(--mono); font-size:10px; color:var(--safe); background:rgba(47,168,107,0.08); border:1px solid rgba(47,168,107,0.2); padding:3px 8px; border-radius:20px; white-space:nowrap; }
+
+/* ============ DOWNLOAD ============ */
+.download-panel{
+  display:grid; grid-template-columns:1fr 1.1fr; gap:0; border:1px solid var(--line); border-radius:18px; overflow:hidden;
+  background:var(--panel);
+}
+@media(max-width:800px){ .download-panel{ grid-template-columns:1fr; } }
+.download-main{
+  padding:36px 32px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:14px;
+  background:linear-gradient(160deg, var(--panel-2), var(--panel));
+  border-right:1px solid var(--line-soft);
+}
+@media(max-width:800px){ .download-main{ border-right:none; border-bottom:1px solid var(--line-soft); } }
+.download-version{ font-family:var(--mono); font-size:11px; color:var(--flame); letter-spacing:0.08em; text-transform:uppercase; }
+.btn-lg{ padding:15px 26px; font-size:14.5px; }
+.download-sub{ font-size:12.5px; color:var(--text-faint); max-width:320px; }
+.download-includes{ padding:32px; }
+.download-includes .h{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:14px; }
+.download-includes ul{ list-style:none; display:flex; flex-direction:column; gap:11px; }
+.download-includes li{ font-size:13px; color:var(--text-dim); padding-left:20px; position:relative; }
+.download-includes li::before{ content:"✓"; position:absolute; left:0; color:var(--safe); font-weight:700; }
+.download-note{ margin-top:20px; font-size:12.5px; color:var(--text-faint); background:var(--panel-2); border:1px solid var(--line-soft); border-radius:10px; padding:14px 18px; }
+
+/* ============ FOOTER ============ */
+footer{ border-top:1px solid var(--line-soft); padding:56px 0 40px; }
+footer .foot-row{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+footer .brand{ font-size:13px; }
+footer .fine{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint); }
+
+.reveal{ opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease; }
+.reveal.in{ opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c-3 4-6 6.5-6 10.5A6 6 0 0 0 12 19a6 6 0 0 0 6-6.5C18 8.5 15 6 12 2z" fill="#0A0A0C"/></svg>
+      GASLIGHT <span class="v">V1.0</span>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="#chain">The Problem</a>
+      <a href="#modules">Architecture</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#scorer">Scoring</a>
+      <a href="#bait">Deception</a>
+      <a href="get-linux.html">Download</a>
+      <a href="https://github.com/cityangel1/GasLight-Ransomware-Prevention" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <div class="nav-status"><span class="dot"></span> ACTIVE DECEPTION ON</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">AI-powered ransomware prevention</div>
+      <h1>Gaslight<br>the intruder.</h1>
+      <p class="tagline">Predict. Deceive. Protect.</p>
+      <p class="desc">Most defenses race to recover files after encryption starts. GasLight never lets the race begin — it profiles process behavior in real time, lures malware into a fake file system, and shuts it down before a single real document is touched.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="get-linux.html">⭳ Get for Linux</a>
+        <a class="btn btn-ghost" href="#modules">See the architecture</a>
+      </div>
+      <div class="hero-note">Linux · v1.0 · <a href="#download">what's in the download →</a></div>
+    </div>
+    <div class="lamp-stage">
+      <div class="lamp-frame">
+        <div class="lamp-cap"></div>
+        <div class="lamp-glass" id="lamp-glass">
+          <div class="flame" id="lamp-flame"></div>
+        </div>
+        <div class="lamp-neck"></div>
+        <div class="lamp-base"></div>
+        <div class="lamp-readout">
+          <span class="status-line" id="lamp-status">MONITORING · 0 THREATS ACTIVE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="chain">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">01 · THE PROBLEM</span>
+      <h2>Recovery is always too late.</h2>
+      <p>Ransomware wins the moment encryption starts. Traditional tools try to clean up afterward — GasLight is built to never let that moment arrive.</p>
+    </div>
+    <div class="chain reveal">
+      <div class="chain-col threat">
+        <div class="chain-label">● How ransomware usually wins</div>
+        <div class="chain-step"><span class="n">01</span><div><div class="t">Encrypt fast</div><div class="d">Write velocity spikes from ~2 files/sec to 200+, racing to finish before anyone notices.</div></div></div>
+        <div class="chain-step"><span class="n">02</span><div><div class="t">Erase the safety net</div><div class="d">Volume Shadow Copies are deleted so local recovery isn't an option.</div></div></div>
+        <div class="chain-step"><span class="n">03</span><div><div class="t">Demand payment</div><div class="d">By the time signature-based AV reacts, the damage is already done.</div></div></div>
+      </div>
+      <div class="chain-vs">VS</div>
+      <div class="chain-col defense">
+        <div class="chain-label">● How GasLight stops it first</div>
+        <div class="chain-step"><span class="n">01</span><div><div class="t">Predict from behavior</div><div class="d">Entropy, write velocity, and rename patterns are scored continuously — no signatures needed.</div></div></div>
+        <div class="chain-step"><span class="n">02</span><div><div class="t">Deceive with decoys</div><div class="d">Honey files planted at strategic paths bait the malware before it reaches anything real.</div></div></div>
+        <div class="chain-step"><span class="n">03</span><div><div class="t">Protect with zero loss</div><div class="d">Writes are redirected to a deception vault and the process is terminated. 0 real files lost.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section id="modules">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">02 · ARCHITECTURE</span>
+      <h2>Five modules, one coordinated defense.</h2>
+      <p>GasLight is a layered system — each module does one job well. Select any module to view its technical specification.</p>
+    </div>
+    <div class="mod-grid reveal" id="mod-grid"></div>
+    <div class="mod-detail" id="mod-detail"></div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section id="pipeline">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">03 · DETECTION PIPELINE</span>
+      <h2>From process launch to mitigation, in milliseconds.</h2>
+      <p>Every running process moves through the same four-stage evaluation loop, continuously, for the life of the process.</p>
+    </div>
+    <div class="pipeline reveal">
+      <div class="pipeline-track"></div>
+      <div class="pipeline-grid" id="pipeline-grid"></div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section id="scorer">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">04 · BEHAVIORAL SCORER</span>
+      <h2>Five signals decide the risk score.</h2>
+      <p>Adjust the weight sliders below and watch how a live "wannacry_payload.exe" scenario scores against them — this is the same matrix the Behavioral Engine runs in production.</p>
+    </div>
+    <div class="matrix-layout reveal">
+      <div id="feature-list"></div>
+      <div class="score-panel">
+        <div class="kicker">Sample scenario</div>
+        <h4>wannacry_payload.exe — active infection</h4>
+        <div class="gauge-wrap"><div class="gauge-fill" id="gauge-fill"></div></div>
+        <div class="gauge-num" id="gauge-num">5</div>
+        <div class="gauge-label">Risk score / 100 &nbsp;·&nbsp; kill threshold: 85</div>
+        <div class="scenario">
+          Scenario fixed at: <b>62 writes/sec</b>, <b>7.96 entropy</b>, <b>1 honey-file hit</b>, <b>VSS deletion attempted</b>. Only the weights change — see which signal actually matters most.
+        </div>
+        <button class="reset-link" id="reset-weights">Restore scorer defaults</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section id="bait">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">05 · DECEPTION ENGINE</span>
+      <h2>Bait it can't resist.</h2>
+      <p>Ransomware traverses directories alphabetically or hunts for high-value keywords. GasLight exploits that habit by planting irresistible decoys exactly where it's looking.</p>
+    </div>
+    <div class="bait-layout reveal">
+      <div class="bait-note">
+        <h4>🜂 Why alphabetical seeding works</h4>
+        <p>Most automated ransomware sorts and encrypts files alphabetically within a directory. Naming a decoy file <b>00_</b> or <b>_0_</b> guarantees it's the very first thing the malware thread evaluates.</p>
+        <div class="callout"><b>+98% confidence</b> — a touch on any bait is treated as near-certain malicious intent, since no legitimate process has a reason to open it.</div>
+      </div>
+      <div class="bait-list" id="bait-list"></div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section id="download">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">06 · GET GASLIGHT</span>
+      <h2>Download and run it yourself.</h2>
+      <p>Everything above is real, working code — not a mockup. Download the full project and run the endpoint agent, behavioral engine, and dashboard on your own machine.</p>
+    </div>
+
+    <div class="download-panel reveal">
+      <div class="download-main">
+        <div class="download-version">v1.0 · Linux</div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <a class="btn btn-primary btn-lg" href="get-linux.html">⭳ Get for Linux</a>
+          <a class="btn btn-lg" href="https://github.com/cityangel1/GasLight-Ransomware-Prevention" target="_blank" rel="noopener" style="border:1px solid var(--line); background:var(--panel-2);">View on GitHub</a>
+        </div>
+        <div class="download-sub">Clone, run <span style="font-family:var(--mono);">scripts/install-linux.sh</span>, and you're running — including optional real fanotify-based enforcement.</div>
+      </div>
+      <div class="download-includes">
+        <div class="h">What's in the project</div>
+        <ul>
+          <li>Endpoint agent source (Rust) — process, filesystem, registry &amp; network telemetry</li>
+          <li>Behavioral engine — explainable per-process risk scoring</li>
+          <li>Deception engine — decoy generation, rotation, honeypot monitoring</li>
+          <li>Enforcement engine — real fanotify-based write blocking, opt-in, Linux only</li>
+          <li>Live SOC dashboard (this page's sibling — zero build step)</li>
+          <li>Full READMEs — build steps, known limitations, test plans</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="download-note reveal">
+      <b>Platform note:</b> the agent, behavioral engine, deception engine, and dashboard run cross-platform. The filter driver is genuinely Windows-only kernel code and needs a separate Windows build with the WDK — see <span style="font-family:var(--mono);">driver/README.md</span> in the download for the full build and safety checklist before loading it anywhere but a disposable test VM.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-row">
+    <div class="brand"><svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;"><path d="M12 2c-3 4-6 6.5-6 10.5A6 6 0 0 0 12 19a6 6 0 0 0 6-6.5C18 8.5 15 6 12 2z" fill="#86868D"/></svg> GASLIGHT PROTECTION PLATFORM</div>
+    <div class="fine">Designed to prevent encryption loss · Built for real-time ransomware prevention</div>
+  </div>
+</footer>
+
+<script>
+/* ===== data ===== */
+const MODULES = [
+  {id:"agent", title:"Endpoint Agent", tech:"Rust / C++ · Userland daemon", sub:"Module 1 — Continuous Monitor & Orchestration",
+    desc:"Sits quietly in user space as the system's central command. Listens to the kernel driver, feeds clean events into the behavioral scorer, handles system-wide notifications, and initiates lightning-fast kill commands when the threat score crosses safe boundaries.",
+    features:["Process watcher monitoring fork/spawn cycles in real time","Low-level IPC pipe to the filesystem driver","Event dispatch to the behavioral scoring engine","Process freeze, suspend, and secure termination","Instant desktop-level notifications and alerting"]},
+  {id:"behavioral", title:"Behavioral Engine", tech:"Rust inference · Lightweight scoring model", sub:"Module 2 — Anomaly & Heuristic Intelligence",
+    desc:"Instead of relying on outdated antivirus signatures, this engine assesses intentions — correlating write speed, encryption entropy, and file extensions. When an unknown binary starts modifying files at extreme velocity while outputting high-entropy content, GasLight acts instantly.",
+    features:["Dynamic multi-vector risk score (0–100)","High-velocity write burst monitoring","Shannon entropy computation on file content","Rename-sequence analysis for crypto extensions","Anomaly scoring against benign process baselines"]},
+  {id:"filter", title:"File-System Filter", tech:"C · Windows Minifilter / eBPF", sub:"Module 3 — Interception & Isolation Layer",
+    desc:"The core barrier. Running inside the kernel or as a low-overhead filesystem filter, this layer blocks writes to real directories and transparently redirects malicious requests to an isolated sandbox once a warning state is triggered.",
+    features:["IRP_MJ_CREATE / IRP_MJ_WRITE interception","Write redirection to a secured deception directory","Per-PID dynamic access control lists","Blocks Volume Shadow Copy deletion before execution","Zero-latency overhead for whitelisted tools"]},
+  {id:"deception", title:"Deception Engine", tech:"Virtual disk manager · Decoy generator", sub:"Module 4 — Active Decoys & Traps",
+    desc:"The ultimate trap. Creates juicy, fake file structures ransomware cannot resist. By seeding honey folders at strategic alphabetical spots, malware bites the bait first — confidence spikes to near-100% before a single real document is touched.",
+    features:["Dynamic honey directories (/Payroll, /Confidential)","High-fidelity bait files with realistic content","Simulated fake network shares (Z:/Finance)","+98 score penalty on any honeypot access","Wastes malware CPU cycles encrypting bait, not real data"]},
+  {id:"dashboard", title:"Security Dashboard", tech:"React / Tailwind CSS", sub:"Module 5 — Real-time Security Command",
+    desc:"The primary administrative control panel — complete visibility into active risk scoring, system-wide process behavior, honeypot states, and detailed alerts, with visual confirmation of GasLight's zero-file-loss guarantee.",
+    features:["High-density process risk charts","Live visual logs with deep metadata inspection","Historical timeline of containment events","Deception metrics & honeypot toggles","One-click administrative process overrides"]},
+];
+
+const PIPELINE = [
+  {t:"Process Launch", d:"Process starts and is registered by the Endpoint Agent.", detail:"A monitoring thread is assigned and I/O handle capture begins immediately."},
+  {t:"Behavior Monitor", d:"File-system driver intercepts file operations.", detail:"Observes renames, write volumes, and open handles in real time."},
+  {t:"Feature Scorer", d:"Calculates entropy, rate, and honeypot hits.", detail:"Flags high-entropy writes (>7.5) and sudden mass file renames."},
+  {t:"Mitigation", d:"Blocks writes, redirects to vault, kills process.", detail:"Score > 75 → writes redirect. Score > 85 → PID is terminated."},
+];
+
+const FEATURES = [
+  {name:"Write Velocity", metric:"Files / sec", key:"velocity", why:"Ransomware races to lock the drive before it's caught. Speeds spike from a typical 1–5 writes/sec to 200+.", bad:"Unknown.exe modifying 70+ files/sec continuously.", good:"WINWORD.EXE saving active changes (2 writes/sec).", def:20, active:true, contribution:v=>Math.min(62/50,1)*v},
+  {name:"Entropy Spike", metric:"Shannon entropy 0–8.0", key:"entropy", why:"Plain text and documents sit around 2.0–5.5. Encrypted or compressed data spreads bits randomly — entropy jumps to 7.8–8.0.", bad:"File entropy leaps from 3.5 to 7.98 on write.", good:"Word or Excel files staying flat around 4.1 entropy.", def:25, active:true, contribution:v=>Math.min((7.96-6.5)/1.5,1)*v},
+  {name:"Rename Bursts", metric:"Extension change velocity", key:"rename", why:"Ransomware typically appends a unique extension (.locked, .crypto) right after encrypting. Frequent renames are a classic tell.", bad:"Continuous sequential .locked extensions appended.", good:"A compiler creating standard .o, .obj, or .js files.", def:15, active:false, contribution:v=>0},
+  {name:"Honey File Intercept", metric:"Decoy access triggers", key:"honey", why:"Honey directories sit at alphabetical start/end points no normal process has any reason to touch. A single touch is high-confidence.", bad:"PID tries to overwrite /Confidential/Passwords.txt.", good:"System files bypassing decoy shares entirely.", def:50, active:true, contribution:v=>v},
+  {name:"Shadow Copy Deletion", metric:"vssadmin payload check", key:"vss", why:"Most modern ransomware deletes system restore points and Shadow Copies first, to block easy recovery without payment.", bad:"vssadmin.exe delete shadows /all /quiet executed.", good:"Standard backup services writing incremental states.", def:35, active:true, contribution:v=>v},
+];
+
+const BAITS = [
+  {name:"00_Corporate_Payroll.xlsx", path:"/Payroll/00_Corporate_Payroll.xlsx", type:"file", size:"380 KB", conf:98},
+  {name:"AWS_Secret_Credentials.txt", path:"/Confidential/AWS_Secret_Credentials.txt", type:"file", size:"4 KB", conf:98},
+  {name:"Z: Shared Network Drive", path:"Z:/Finance/ (deception share)", type:"drive", size:"1 TB virtual", conf:99},
+  {name:"0_HR_Database_Backup.sql", path:"/Backups/0_HR_Database_Backup.sql", type:"file", size:"1.2 GB", conf:98},
+];
+
+const ICON_MOD = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`;
+const ICON_BAIT = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v4H4zM4 12h10v8H4zM17 12h3v8h-3z"/></svg>`;
+
+/* ===== render modules ===== */
+const modGrid = document.getElementById('mod-grid');
+const modDetail = document.getElementById('mod-detail');
+MODULES.forEach((m,i)=>{
+  const card = document.createElement('button');
+  card.className='mod-card'; card.dataset.id=m.id;
+  card.innerHTML = `<div><div class="ic">${ICON_MOD}</div><h4>${m.title}</h4><div class="tech">${m.tech}</div></div><div class="go">View blueprint →</div>`;
+  card.addEventListener('click', ()=> openModule(m.id));
+  modGrid.appendChild(card);
+});
+function openModule(id){
+  const m = MODULES.find(x=>x.id===id);
+  document.querySelectorAll('.mod-card').forEach(c=>c.classList.toggle('active', c.dataset.id===id));
+  modDetail.innerHTML = `
+    <div class="kicker">Technical specification</div>
+    <h3>${m.title}</h3>
+    <div class="sub">${m.sub}</div>
+    <div class="stack">⚙ ${m.tech}</div>
+    <p class="desc">${m.desc}</p>
+    <ul>${m.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+  `;
+  modDetail.classList.add('open');
+}
+
+/* ===== render pipeline ===== */
+const pipeGrid = document.getElementById('pipeline-grid');
+PIPELINE.forEach((s,i)=>{
+  const el = document.createElement('div');
+  el.className='pipe-step';
+  el.innerHTML = `<div class="pipe-num">${i+1}</div><h4>${s.t}</h4><div class="d">${s.d}</div><div class="detail">${s.detail}</div>`;
+  pipeGrid.appendChild(el);
+});
+
+/* ===== render bait list ===== */
+const baitList = document.getElementById('bait-list');
+BAITS.forEach(b=>{
+  const el = document.createElement('div');
+  el.className='bait-item';
+  el.innerHTML = `<div class="left"><div class="ic">${ICON_BAIT}</div><div><div class="name">${b.name}</div><div class="path">${b.path}</div></div></div><div class="conf">+${b.conf}% confidence</div>`;
+  baitList.appendChild(el);
+});
+
+/* ===== scorer matrix ===== */
+const featureList = document.getElementById('feature-list');
+const weights = {};
+FEATURES.forEach(f=>weights[f.key]=f.def);
+
+FEATURES.forEach(f=>{
+  const row = document.createElement('div');
+  row.className='feature-row';
+  row.innerHTML = `
+    <div class="top"><h4>${f.name}</h4><span class="metric">${f.metric}</span></div>
+    <div class="why">${f.why}</div>
+    <div class="patterns">
+      <div class="pattern bad">⚠ <span><b>Threat signal:</b> ${f.bad}</span></div>
+      <div class="pattern good">✓ <span><b>Benign standard:</b> ${f.good}</span></div>
+    </div>
+    <div class="slider-row">
+      <input type="range" min="5" max="60" value="${f.def}" data-key="${f.key}">
+      <span class="val" id="val-${f.key}">+${f.def} score</span>
+    </div>`;
+  featureList.appendChild(row);
+});
+
+function calcScore(){
+  let score = 5;
+  FEATURES.forEach(f=>{ score += f.contribution(weights[f.key]); });
+  return Math.min(Math.round(score), 100);
+}
+function updateGauge(){
+  const s = calcScore();
+  document.getElementById('gauge-fill').style.width = s+'%';
+  document.getElementById('gauge-num').textContent = s;
+  document.getElementById('gauge-num').style.color = s>=85 ? 'var(--danger)' : s>=40 ? 'var(--flame)' : 'var(--safe)';
+}
+featureList.addEventListener('input', e=>{
+  if(e.target.type==='range'){
+    const key = e.target.dataset.key;
+    weights[key] = Number(e.target.value);
+    document.getElementById('val-'+key).textContent = '+'+e.target.value+' score';
+    updateGauge();
+  }
+});
+document.getElementById('reset-weights').addEventListener('click', ()=>{
+  FEATURES.forEach(f=>{
+    weights[f.key]=f.def;
+    const input = featureList.querySelector(`input[data-key="${f.key}"]`);
+    input.value = f.def;
+    document.getElementById('val-'+f.key).textContent = '+'+f.def+' score';
+  });
+  updateGauge();
+});
+updateGauge();
+
+/* ===== hero lamp ambient state ===== */
+/* ===== scroll reveal ===== */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+}, {threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* open first module by default on desktop */
+if(window.innerWidth > 760){ openModule('agent'); }
+</script>
+</body>
+</html>
