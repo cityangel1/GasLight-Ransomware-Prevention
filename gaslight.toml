@@ -4,8 +4,6 @@
 
 [file]
 # Directories to recursively watch for file activity.
-# On Windows you'd typically point this at user profile / shared drives, e.g.:
-#   watch_paths = ["C:\\Users", "D:\\Data"]
 watch_paths = ["./watched"]
 
 # How many bytes to read from the start of a written file when computing

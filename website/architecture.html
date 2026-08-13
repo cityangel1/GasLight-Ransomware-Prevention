@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="assets/favicon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <title>GasLight — Predict. Deceive. Protect.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -67,6 +71,8 @@ nav{
 }
 nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:64px; }
 .brand{ display:flex; align-items:center; gap:10px; font-family:var(--disp); font-weight:700; font-size:15px; letter-spacing:0.06em; }
+.brand img{ height:26px; width:auto; display:block; }
+footer .brand img{ height:20px; }
 .brand svg{ width:20px; height:20px; }
 .brand .v{
   font-family:var(--mono); font-size:9px; letter-spacing:0.08em; font-weight:700;
@@ -327,8 +333,8 @@ footer .fine{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint)
 <nav>
   <div class="wrap">
     <div class="brand">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c-3 4-6 6.5-6 10.5A6 6 0 0 0 12 19a6 6 0 0 0 6-6.5C18 8.5 15 6 12 2z" fill="#FF7A33"/></svg>
-      GASLIGHT <span class="v">V1.0</span>
+      <img src="assets/gaslight-logo-light.png" alt="GasLight">
+      <span class="v">V1.0</span>
     </div>
     <div class="nav-links">
       <a href="index.html">Home</a>
@@ -422,18 +428,18 @@ footer .fine{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint)
     <div class="section-head reveal">
       <span class="section-num">04 · BEHAVIORAL SCORER</span>
       <h2>Five signals decide the risk score.</h2>
-      <p>Adjust the weight sliders below and watch how a live "wannacry_payload.exe" scenario scores against them — this is the same matrix the Behavioral Engine runs in production.</p>
+      <p>Adjust the weight sliders below and watch how a live "svc-new" scenario scores against them — this is the same matrix the Behavioral Engine runs in production.</p>
     </div>
     <div class="matrix-layout reveal">
       <div id="feature-list"></div>
       <div class="score-panel">
-        <div class="kicker">Sample scenario</div>
-        <h4>wannacry_payload.exe — active infection</h4>
+        <div class="kicker">Sample scenario · RansomEXX (Linux)</div>
+        <h4>svc-new — active infection</h4>
         <div class="gauge-wrap"><div class="gauge-fill" id="gauge-fill"></div></div>
         <div class="gauge-num" id="gauge-num">5</div>
         <div class="gauge-label">Risk score / 100 &nbsp;·&nbsp; kill threshold: 85</div>
         <div class="scenario">
-          Scenario fixed at: <b>62 writes/sec</b>, <b>7.96 entropy</b>, <b>1 honey-file hit</b>, <b>VSS deletion attempted</b>. Only the weights change — see which signal actually matters most.
+          Scenario fixed at: <b>58 writes/sec</b>, <b>7.91 entropy</b>, <b>1 honey-file hit</b>, <b>files renamed to a hardcoded per-victim extension</b>. No snapshot deletion attempted — RansomEXX's Linux payload is a lean, no-frills ELF encryptor that skips it entirely. Only the weights change — see which signal actually matters most.
         </div>
         <button class="reset-link" id="reset-weights">Restore scorer defaults</button>
       </div>
@@ -494,14 +500,14 @@ footer .fine{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint)
     </div>
 
     <div class="download-note reveal">
-      <b>Platform note:</b> the agent, behavioral engine, deception engine, and dashboard run cross-platform. The filter driver is genuinely Windows-only kernel code and needs a separate Windows build with the WDK — see <span style="font-family:var(--mono);">driver/README.md</span> in the download for the full build and safety checklist before loading it anywhere but a disposable test VM.
+      <b>Platform note:</b> the agent, behavioral engine, deception engine, dashboard, and enforcement layer all run natively on Linux — see <span style="font-family:var(--mono);">README.md</span> in the download for the full build and setup checklist.
     </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap foot-row">
-    <div class="brand"><svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;"><path d="M12 2c-3 4-6 6.5-6 10.5A6 6 0 0 0 12 19a6 6 0 0 0 6-6.5C18 8.5 15 6 12 2z" fill="#86868D"/></svg> GASLIGHT PROTECTION PLATFORM</div>
+    <div class="brand"><img src="assets/gaslight-logo-light.png" alt="GasLight" style="vertical-align:-6px;margin-right:6px;"> PROTECTION PLATFORM</div>
     <div class="fine">Designed to prevent encryption loss · Built for real-time ransomware prevention</div>
   </div>
 </footer>
@@ -509,18 +515,18 @@ footer .fine{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint)
 <script>
 /* ===== data ===== */
 const MODULES = [
-  {id:"agent", title:"Endpoint Agent", tech:"Rust / C++ · Userland daemon", sub:"Module 1 — Continuous Monitor & Orchestration",
-    desc:"Sits quietly in user space as the system's central command. Listens to the kernel driver, feeds clean events into the behavioral scorer, handles system-wide notifications, and initiates lightning-fast kill commands when the threat score crosses safe boundaries.",
-    features:["Process watcher monitoring fork/spawn cycles in real time","Low-level IPC pipe to the filesystem driver","Event dispatch to the behavioral scoring engine","Process freeze, suspend, and secure termination","Instant desktop-level notifications and alerting"]},
+  {id:"agent", title:"Endpoint Agent", tech:"Rust · Userland daemon", sub:"Module 1 — Continuous Monitor & Orchestration",
+    desc:"Sits quietly in user space as the system's central command. Collects telemetry from fanotify and the filesystem watcher, feeds clean events into the behavioral scorer, handles system-wide notifications, and initiates lightning-fast kill commands when the threat score crosses safe boundaries.",
+    features:["Process watcher monitoring fork/spawn cycles in real time","Direct fanotify integration for PID-attributed file events","Event dispatch to the behavioral scoring engine","Process freeze, suspend, and secure termination","Instant desktop-level notifications and alerting"]},
   {id:"behavioral", title:"Behavioral Engine", tech:"Rust inference · Lightweight scoring model", sub:"Module 2 — Anomaly & Heuristic Intelligence",
     desc:"Instead of relying on outdated antivirus signatures, this engine assesses intentions — correlating write speed, encryption entropy, and file extensions. When an unknown binary starts modifying files at extreme velocity while outputting high-entropy content, GasLight acts instantly.",
     features:["Dynamic multi-vector risk score (0–100)","High-velocity write burst monitoring","Shannon entropy computation on file content","Rename-sequence analysis for crypto extensions","Anomaly scoring against benign process baselines"]},
-  {id:"filter", title:"File-System Filter", tech:"C · Windows Minifilter / eBPF", sub:"Module 3 — Interception & Isolation Layer",
-    desc:"The core barrier. Running inside the kernel or as a low-overhead filesystem filter, this layer blocks writes to real directories and transparently redirects malicious requests to an isolated sandbox once a warning state is triggered.",
-    features:["IRP_MJ_CREATE / IRP_MJ_WRITE interception","Write redirection to a secured deception directory","Per-PID dynamic access control lists","Blocks Volume Shadow Copy deletion before execution","Zero-latency overhead for whitelisted tools"]},
+  {id:"filter", title:"Enforcement Layer", tech:"Rust · Linux fanotify", sub:"Module 3 — Interception & Isolation Layer",
+    desc:"The core barrier. Running entirely in user space via Linux's fanotify permission events, this layer blocks writes to real directories and denies malicious file opens once a warning state is triggered — no kernel module required.",
+    features:["FAN_OPEN_PERM interception on watched paths","Per-PID dynamic block list","Blocks filesystem snapshot deletion before execution","Fail-open by design — only flagged PIDs are denied","Zero-latency overhead for whitelisted tools"]},
   {id:"deception", title:"Deception Engine", tech:"Virtual disk manager · Decoy generator", sub:"Module 4 — Active Decoys & Traps",
     desc:"The ultimate trap. Creates juicy, fake file structures ransomware cannot resist. By seeding honey folders at strategic alphabetical spots, malware bites the bait first — confidence spikes to near-100% before a single real document is touched.",
-    features:["Dynamic honey directories (/Payroll, /Confidential)","High-fidelity bait files with realistic content","Simulated fake network shares (Z:/Finance)","+98 score penalty on any honeypot access","Wastes malware CPU cycles encrypting bait, not real data"]},
+    features:["Dynamic honey directories (/Payroll, /Confidential)","High-fidelity bait files with realistic content","Simulated fake network shares (gaslight:/Finance)","+98 score penalty on any honeypot access","Wastes malware CPU cycles encrypting bait, not real data"]},
   {id:"dashboard", title:"Security Dashboard", tech:"React / Tailwind CSS", sub:"Module 5 — Real-time Security Command",
     desc:"The primary administrative control panel — complete visibility into active risk scoring, system-wide process behavior, honeypot states, and detailed alerts, with visual confirmation of GasLight's zero-file-loss guarantee.",
     features:["High-density process risk charts","Live visual logs with deep metadata inspection","Historical timeline of containment events","Deception metrics & honeypot toggles","One-click administrative process overrides"]},
@@ -534,11 +540,11 @@ const PIPELINE = [
 ];
 
 const FEATURES = [
-  {name:"Write Velocity", metric:"Files / sec", key:"velocity", why:"Ransomware races to lock the drive before it's caught. Speeds spike from a typical 1–5 writes/sec to 200+.", bad:"Unknown.exe modifying 70+ files/sec continuously.", good:"WINWORD.EXE saving active changes (2 writes/sec).", def:20, active:true, contribution:v=>Math.min(62/50,1)*v},
-  {name:"Entropy Spike", metric:"Shannon entropy 0–8.0", key:"entropy", why:"Plain text and documents sit around 2.0–5.5. Encrypted or compressed data spreads bits randomly — entropy jumps to 7.8–8.0.", bad:"File entropy leaps from 3.5 to 7.98 on write.", good:"Word or Excel files staying flat around 4.1 entropy.", def:25, active:true, contribution:v=>Math.min((7.96-6.5)/1.5,1)*v},
-  {name:"Rename Bursts", metric:"Extension change velocity", key:"rename", why:"Ransomware typically appends a unique extension (.locked, .crypto) right after encrypting. Frequent renames are a classic tell.", bad:"Continuous sequential .locked extensions appended.", good:"A compiler creating standard .o, .obj, or .js files.", def:15, active:false, contribution:v=>0},
+  {name:"Write Velocity", metric:"Files / sec", key:"velocity", why:"Ransomware races to lock the drive before it's caught. Speeds spike from a typical 1–5 writes/sec to 200+.", bad:"Unknown process modifying 70+ files/sec continuously.", good:"A document editor saving active changes (2 writes/sec).", def:20, active:true, contribution:v=>Math.min(58/50,1)*v},
+  {name:"Entropy Spike", metric:"Shannon entropy 0–8.0", key:"entropy", why:"Plain text and documents sit around 2.0–5.5. Encrypted or compressed data spreads bits randomly — entropy jumps to 7.8–8.0.", bad:"File entropy leaps from 3.5 to 7.9+ on write.", good:"Word or Excel files staying flat around 4.1 entropy.", def:25, active:true, contribution:v=>Math.min((7.91-6.5)/1.5,1)*v},
+  {name:"Rename Bursts", metric:"Extension change velocity", key:"rename", why:"Ransomware typically appends a unique extension right after encrypting. RansomEXX goes further — the extension (and the ransom-note email) is hardcoded per victim, generated ahead of time from the target's name.", bad:"Every encrypted file renamed to the same hardcoded, organization-specific extension.", good:"A compiler creating standard .o, .obj, or .js files.", def:15, active:true, contribution:v=>v},
   {name:"Honey File Intercept", metric:"Decoy access triggers", key:"honey", why:"Honey directories sit at alphabetical start/end points no normal process has any reason to touch. A single touch is high-confidence.", bad:"PID tries to overwrite /Confidential/Passwords.txt.", good:"System files bypassing decoy shares entirely.", def:50, active:true, contribution:v=>v},
-  {name:"Shadow Copy Deletion", metric:"vssadmin payload check", key:"vss", why:"Most modern ransomware deletes system restore points and Shadow Copies first, to block easy recovery without payment.", bad:"vssadmin.exe delete shadows /all /quiet executed.", good:"Standard backup services writing incremental states.", def:35, active:true, contribution:v=>v},
+  {name:"Snapshot Deletion", metric:"backup-snapshot removal check", key:"vss", why:"Most modern ransomware deletes system restore points and filesystem snapshots first, to block easy recovery without payment. RansomEXX's Linux build skips this — Kaspersky's teardown found no process-kill, free-space-wipe, or snapshot-deletion logic at all, just a lean encryptor.", bad:"LVM/Btrfs snapshot removal executed against every recovery point.", good:"Standard backup services writing incremental states.", def:35, active:false, contribution:v=>0},
 ];
 
 const BAITS = [

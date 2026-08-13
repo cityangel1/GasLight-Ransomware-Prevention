@@ -1,14 +1,13 @@
 // File monitor — the busiest collector.
 //
-// NOTE: OS-level filesystem notifications (inotify / ReadDirectoryChangesW /
-// FSEvents) do not include which process performed the write, so every
-// event from this collector carries `pid: None`. Attribution to a specific
-// process would require kernel-level interception — on Windows that's the
-// minifilter driver in `driver/`; on Linux, `collector/fanotify.rs`
-// already solves this for writes specifically (from user space, no
-// kernel module needed — see that file for why). When fanotify is
-// available, `skip_writes` is set so this collector doesn't emit a
-// second, unattributed copy of the same write events — it still handles
+// NOTE: OS-level filesystem notifications (inotify) do not include which
+// process performed the write, so every event from this collector
+// carries `pid: None`. Attribution to a specific process would normally
+// require kernel-level interception, but `collector/fanotify.rs` already
+// solves this for writes specifically (from user space, no kernel module
+// needed — see that file for why). When fanotify is available,
+// `skip_writes` is set so this collector doesn't emit a second,
+// unattributed copy of the same write events — it still handles
 // create/rename/delete either way, since fanotify's classic (non-FID)
 // event API doesn't cover those.
 //

@@ -6,11 +6,25 @@ HTML, zero build step. Live at
 [gaslightv1.vercel.app](https://gaslightv1.vercel.app/), source at
 [github.com/cityangel1/GasLight-Ransomware-Prevention](https://github.com/cityangel1/GasLight-Ransomware-Prevention).
 
-> **Linux-only, currently.** The Windows setup page and CTA were
-> removed — active development is focused entirely on Linux right now.
-> The Windows-specific Rust code (`#[cfg(windows)]` collectors) and the
-> kernel filter driver (`driver/`) still exist in the repo and still
-> work, they're just not part of the current site or priority.
+> **Linux-only.** Development is focused entirely on Linux.
+
+## Assets
+
+`assets/gaslight-logo.png` is the dark-navy-on-transparent logo, used on
+the light-background pages (`index.html`, `get-linux.html`,
+`architecture.html`). `assets/gaslight-logo-light.png` is a white/orange
+variant of the same mark for dark backgrounds — currently only
+`dashboard.html`, which uses a dark Splunk-Enterprise-Security-style
+theme. Regenerate the light variant from the source PNG if the logo
+changes; don't hand-edit it directly.
+
+`assets/favicon.ico` and the `favicon-*.png` / `apple-touch-icon.png`
+files are the browser-tab icon — just the smiley face cropped out of the
+wordmark, on a rounded orange square so it stays visible on both light
+and dark tab bars. All four pages link to the same set. The 16px size
+uses a simplified circle-and-eyes crop (no smile arc) since the full
+mark turns to mush at that resolution; regenerate both crops together
+if the logo changes.
 
 ## Pages
 
@@ -59,7 +73,7 @@ install.
    update.
 
 No agent running? Click **"Run Demo Attack"** — a scripted
-`wannacry_payload.exe` incident plays through the exact same rendering
+`wannacry_payload.bin` incident plays through the exact same rendering
 pipeline as real telemetry (same `handleMessage()` function, same wire
 format), so the whole dashboard is provable without needing malware, a
 live agent, or even a network connection.
@@ -105,11 +119,9 @@ live agent, or even a network connection.
   a small addition, left as a clearly-scoped follow-up.
 - **No search bar, no Settings UI for live threshold tuning.** Config
   changes go through `gaslight.toml` and an agent restart today.
-- **Writes/sec and entropy per-process depend on platform and
-  privilege.** File events only carry a real PID on Linux running as
-  root (via `fanotify` — see `src/collector/fanotify.rs`) or, on
-  Windows, never (needs the kernel filter driver in `driver/`, which
-  isn't wired into the agent's IPC yet). Everywhere else, file-write
+- **Writes/sec and entropy per-process depend on privilege.** File
+  events only carry a real PID when running as root (via `fanotify` —
+  see `src/collector/fanotify.rs`). Otherwise, file-write
   telemetry shows up under a single "SYSTEM (unattributed)" row rather
   than the real process. The dashboard shows this honestly instead of
   hiding it. Demo Mode sidesteps this by using a synthetic (clearly

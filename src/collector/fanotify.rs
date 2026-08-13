@@ -6,12 +6,10 @@
 // tell you *which process* performed a file write; that's been the
 // single most-repeated limitation across this whole codebase (see
 // `collector/filesystem.rs`, `behavior/engine.rs`'s UNATTRIBUTED_PID
-// bucket, the dashboard README). On Windows, fixing that for real needs
-// the kernel minifilter driver in `driver/`. On Linux, it doesn't —
-// `fanotify_event_metadata` has included the originating PID since the
-// API's introduction (kernel 2.6.37), with no elevated kernel-module
-// build required. This is a genuine capability asymmetry, not just a
-// reskin of the Windows approach.
+// bucket, the dashboard README). `fanotify_event_metadata` has included
+// the originating PID since the API's introduction (kernel 2.6.37), with
+// no elevated kernel-module build required — real per-process file
+// attribution entirely from user space.
 //
 // SCOPE, DELIBERATELY LIMITED:
 //   - Uses the *classic* fanotify event types (FAN_CLOSE_WRITE), which
@@ -25,11 +23,9 @@
 //     from the existing `notify`-based collector (unattributed, as
 //     before). See `main.rs` for how the two are coordinated so writes
 //     aren't double-counted.
-//   - Requires CAP_SYS_ADMIN (in practice: running as root). This is the
-//     same shape of tradeoff as the Windows filter driver needing
-//     SYSTEM/kernel privileges — real endpoint protection needs elevated
-//     privileges on any OS. Falls back gracefully (not a crash) if
-//     unavailable; see `is_available()`.
+//   - Requires CAP_SYS_ADMIN (in practice: running as root) — real
+//     endpoint protection needs elevated privileges. Falls back
+//     gracefully (not a crash) if unavailable; see `is_available()`.
 //   - Marks the whole filesystem containing `/` (`FAN_MARK_FILESYSTEM`)
 //     rather than walking and marking every subdirectory individually.
 //     This is a deliberate simplicity-over-precision choice: recursive

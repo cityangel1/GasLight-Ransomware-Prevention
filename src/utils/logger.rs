@@ -73,8 +73,7 @@ fn rotate_if_needed(st: &LoggerState, file: &mut File) {
         if meta.len() >= st.max_bytes {
             let backup = format!("{}.1", st.path);
             // Copy current contents out to the backup, then truncate the
-            // active handle in place. This deliberately avoids close/rename,
-            // which can fail on Windows while the file is held open.
+            // active handle in place, rather than close/rename.
             if fs::copy(&st.path, &backup).is_ok() {
                 let _ = file.set_len(0);
                 let _ = file.seek(SeekFrom::Start(0));

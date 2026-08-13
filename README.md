@@ -4,12 +4,9 @@ The observability core *and* the behavioral engine from the GasLight
 architecture docs — telemetry collection feeding a real, explainable,
 per-process risk-scoring pipeline, now with real (opt-in) enforcement.
 
-> **Linux-only, currently.** The public site, install script, and active
-> development all target Linux specifically — see
-> `scripts/install-linux.sh` and `website/get-linux.html`. The Windows
-> Rust code (`#[cfg(windows)]` collectors) and the kernel filter driver
-> in `driver/` still exist and still compile in principle, they're just
-> not the current focus and not part of the website anymore. Live site:
+> **Linux-only.** The public site, install script, and all active
+> development target Linux specifically — see
+> `scripts/install-linux.sh` and `website/get-linux.html`. Live site:
 > [gaslightv1.vercel.app](https://gaslightv1.vercel.app/). Source:
 > [github.com/cityangel1/GasLight-Ransomware-Prevention](https://github.com/cityangel1/GasLight-Ransomware-Prevention).
 
@@ -44,24 +41,16 @@ Milestone 1's placeholder system-wide scorer:
       the entropy tracker's compressed-format exemption
 
 Registry/persistence and network monitoring (`src/collector/registry.rs`,
-`src/collector/network.rs`) are **real implementations on both Windows
-and Linux** — genuinely different mechanisms per platform, not a reskin:
+`src/collector/network.rs`) are **real, Linux-native implementations**:
 
-| | Windows | Linux |
-|---|---|---|
-| Persistence | `winreg` — polls Run/RunOnce keys, Defender real-time-protection policy, SafeBoot config, Winlogon | `notify` — watches cron.d/daily/hourly/weekly, systemd units, `/etc/ld.so.preload`, shell rc files |
-| Network | `GetExtendedTcpTable` (iphlpapi.dll) — connections come with owning PID built in | `/proc/net/tcp` + `/proc/<pid>/fd/*` inode cross-reference (the same technique `ss`/`netstat` use) |
+| | Linux |
+|---|---|
+| Persistence | `notify` — watches cron.d/daily/hourly/weekly, systemd units, `/etc/ld.so.preload`, shell rc files |
+| Network | `/proc/net/tcp` + `/proc/<pid>/fd/*` inode cross-reference (the same technique `ss`/`netstat` use) |
 
 Both remain no-ops on any other platform.
 
-**Milestone 3 (filesystem filter driver)** lives in `driver/` — a
-Windows kernel-mode minifilter that enforces policy decisions from this
-Milestone 2 engine. See `driver/README.md` for its own scope, build
-instructions, and (much more serious) safety caveats than this user-mode
-agent carries.
-
-**Linux gets something Windows structurally can't have without that
-kernel driver**: `src/collector/fanotify.rs` uses Linux's `fanotify` API
+`src/collector/fanotify.rs` uses Linux's `fanotify` API
 to get real, PID-attributed file-write events **entirely from user
 space** — `fanotify_event_metadata` has included the originating PID
 since the API's introduction, no kernel module required. This directly
@@ -69,12 +58,12 @@ fixes the single most-repeated limitation in this project (see
 `behavior/engine.rs`'s `UNATTRIBUTED_PID` bucket). It needs
 `CAP_SYS_ADMIN` (in practice, root) and only covers write completion
 (`FAN_CLOSE_WRITE`) — create/rename/delete still come from the ordinary
-cross-platform watcher, unattributed as before; the newer
+`notify`-based watcher, unattributed as before; the newer
 directory-entry fanotify events that would cover those need
 `FAN_REPORT_FID` and file-handle resolution, a separately-scoped
 follow-up. `main.rs` probes availability at startup and automatically
 falls back to the pre-existing unattributed behavior if fanotify isn't
-available (not root, or a non-Linux platform) — nothing crashes either way.
+available (not root) — nothing crashes either way.
 
 **Linux hardening pass** — a focused re-review of `fanotify.rs` and
 `network.rs` caught three real issues, since Linux is the current
@@ -101,9 +90,8 @@ priority platform for active development:
 piece that closes the actual "protect" gap. Every mitigation action in
 this project — `Suspend`, `ProtectFilesystem`, `Terminate` — routes
 through `driver::client::DriverClient`, and until now `block_writes()`
-was a permanent no-op everywhere: it logged an intent and did nothing.
-Detection and deception were real; enforcement wasn't. On Linux, it now
-is:
+was a permanent no-op: it logged an intent and did nothing.
+Detection and deception were real; enforcement wasn't. Now it is:
 
 - **`enforcement/fanotify_guard.rs`** uses fanotify *permission* events
   (`FAN_OPEN_PERM`) — a different fanotify mode from
@@ -153,19 +141,14 @@ called anywhere — `src/main.rs` now actually wires it into
 not inferred from score-reason text.
 
 **Platform-hardening pass** — `collector/registry.rs` and
-`collector/network.rs` went from stubs to real, genuinely
-platform-specific implementations on both Windows (`winreg`,
-`GetExtendedTcpTable`) and Linux (`notify`-based persistence watching,
+`collector/network.rs` went from stubs to real, Linux-native
+implementations (`notify`-based persistence watching,
 `/proc/net/tcp` + fd inode matching). Linux additionally got
 `collector/fanotify.rs` — real, PID-attributed file-write events from
-user space (no kernel module needed, unlike Windows), which fixes the
+user space, no kernel module needed, which fixes the
 single most-repeated limitation in this project. See the "Registry/
-persistence and network monitoring" section above for the comparison
-table, and `scripts/install-linux.sh` / `.github/workflows/release.yml`
-for how each platform actually gets installed (clone-and-build on Linux,
-a CI-built binary on Windows via `.github/workflows/release.yml`, though
-only the Linux path is documented on the website now — see
-`website/get-linux.html`).
+persistence and network monitoring" section above for details, and
+`scripts/install-linux.sh` for how it gets installed (clone-and-build).
 
 ## Build & run
 
@@ -197,11 +180,11 @@ then watch the log / websocket feed react.
 
 **On Linux, run as root (or with `sudo`) for full attribution.** Without
 it, `collector/fanotify.rs` can't initialize (needs `CAP_SYS_ADMIN`) and
-the agent silently falls back to unattributed file events, same as
-Windows — the log will say `[fanotify] not available on this
-platform/privilege level` on startup if this happens. This is expected
-and not a crash; it just means file writes land in the `SYSTEM
-(unattributed)` bucket instead of their real process.
+the agent silently falls back to unattributed file events — the log will
+say `[fanotify] not available on this platform/privilege level` on
+startup if this happens. This is expected and not a crash; it just means
+file writes land in the `SYSTEM (unattributed)` bucket instead of their
+real process.
 
 Connect any WebSocket client to `ws://127.0.0.1:7878` to see the live
 JSON feed: each message is `{ "event": <telemetry event>, "report":
@@ -225,25 +208,21 @@ reasons for whatever PID that event touched.
 ## Known limitations (intentional, not bugs)
 
 - **File events carry no PID — except on Linux-with-root, now.**
-  OS-level filesystem watchers (inotify / ReadDirectoryChangesW /
-  FSEvents) don't tell you which process performed a write. On Windows,
-  fixing that for real needs kernel-level interception (the filter driver
-  in `driver/`). On Linux, `collector/fanotify.rs` already fixes it for
+  OS-level filesystem watchers (inotify) don't tell you which process
+  performed a write. `collector/fanotify.rs` fixes this for
   file writes specifically, from user space — see that file and the
   Milestone-4 section above. Every file event that still lacks a PID
-  (Windows always; Linux when not running as root, or for
-  create/rename/delete, which fanotify's classic API doesn't cover) is
+  (not running as root, or for create/rename/delete, which fanotify's
+  classic API doesn't cover) is
   bucketed under a single `UNATTRIBUTED_PID` (0) "SYSTEM" process rather
   than dropped — see the note at the top of `src/behavior/engine.rs`. The
   engine's per-process design already handles real PIDs correctly with no
   further changes needed anywhere else once they're available — which is
   exactly what happened when fanotify was added: zero changes to
   `behavior/`, `deception/`, or the dashboard were needed.
-- **`Suspend` is real on both Unix (SIGSTOP) and Windows** (per-thread
-  `SuspendThread` via a Toolhelp snapshot — the same technique Task
-  Manager's "Suspend" uses, since there's no single "SuspendProcess"
-  Win32 API). Any other target platform falls back to a logged no-op.
-- **`block_writes()` (`ProtectFilesystem`) is real on Linux, opt-in, and
+- **`Suspend` is real on Unix (SIGSTOP).** Any other target platform
+  falls back to a logged no-op.
+- **`block_writes()` (`ProtectFilesystem`) is real, opt-in, and
   narrower than the name implies.** With `[enforcement] enabled = true`
   and root, it denies *new file opens* for a blocked PID under the
   configured `watch_paths` — see `src/enforcement/fanotify_guard.rs`.
@@ -255,8 +234,8 @@ reasons for whatever PID that event touched.
   own. Off by default — read the file's module doc comment before
   enabling it; the failure mode of a bug here (a hung `open()` call,
   potentially system-wide if misconfigured) is more severe than anywhere
-  else in this project. Everywhere else (Windows, or Linux without root
-  or with enforcement disabled), it's still log-only.
+  else in this project. Everywhere else (running without root, or with
+  enforcement disabled), it's still log-only.
 - **Unsigned-executable and privilege-escalation features are stubbed
   `false`** (`src/behavior/feature_extractor.rs`) — both need data
   sources (Authenticode/codesign checks, privilege token inspection) not
@@ -274,16 +253,15 @@ gaslight-agent/
 ├── scripts/
 │   └── install-linux.sh      # clone → build → test → run, one command
 ├── .github/workflows/
-│   └── release.yml           # builds real Windows + Linux binaries via CI, attaches to GitHub Releases
+│   └── release.yml           # builds Linux binaries via CI, attaches to GitHub Releases
 ├── website/                  # the public site — see website/README.md
 │   ├── index.html             # brief overview + Get for Linux
 │   ├── get-linux.html         # Linux setup guide
 │   ├── architecture.html      # full technical deep-dive (formerly gaslight-showcase.html)
 │   └── dashboard.html         # the live SOC dashboard
-├── driver/                   # Windows kernel filter driver (not current focus, still present), see driver/README.md
 └── src/
     ├── main.rs               # wiring: config → collectors → behavioral engine → dashboard
-    ├── collector/            # process.rs, filesystem.rs, entropy.rs, registry.rs, network.rs (real on Windows+Linux), fanotify.rs (Linux-only, PID-attributed writes)
+    ├── collector/            # process.rs, filesystem.rs, entropy.rs, registry.rs, network.rs, fanotify.rs (Linux-only, PID-attributed writes)
     ├── telemetry/            # event.rs (Event enum), queue.rs (channel)
     ├── behavior/             # the Milestone 2 behavioral engine:
     │   ├── process_state.rs    # per-PID rolling state ("medical chart")
@@ -296,7 +274,7 @@ gaslight-agent/
     │   ├── engine.rs            # BehavioralEngine — owns per-PID state, ingests events
     │   └── types.rs             # Decision, DecisionReport
     ├── deception/             # Milestone 4 — decoy generation, rotation, honeypot registry
-    ├── enforcement/           # Milestone 6 — real (opt-in, Linux) fanotify-permission write blocking
+    ├── enforcement/           # Milestone 6 — real (opt-in) fanotify-permission write blocking
     ├── driver/                # client.rs (block/suspend/kill actions)
     ├── dashboard/             # websocket.rs (live telemetry + decision feed)
     ├── config/                # settings.rs (gaslight.toml loader)

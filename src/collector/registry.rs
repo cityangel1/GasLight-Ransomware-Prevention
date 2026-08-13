@@ -1,125 +1,14 @@
-// Registry / persistence monitor.
+// Persistence monitor.
 //
-// Windows: real Run-key/Defender-policy/SafeBoot registry watching via
-// `winreg` (see below). Linux has no registry, but the underlying
-// *intent* — catching persistence mechanisms and security-relevant
-// tampering — maps cleanly onto watching a handful of well-known files
-// and directories instead: cron, systemd units, `/etc/ld.so.preload`
-// (library-injection persistence), and shell startup scripts. That Linux
-// branch reuses the same `notify` crate the main filesystem collector
-// already depends on — the right tool for "watch a handful of specific
-// paths for changes," no new dependency needed there. (The genuinely new
-// dependency this Linux-hardening pass introduces is `libc`, for
-// `collector/fanotify.rs`.)
-//
-// IMPLEMENTATION CHOICE (Windows): polling, not `RegNotifyChangeKeyValue`.
-// The Win32 change-notification API needs an overlapped-I/O wait loop (or
-// a dedicated notification thread per key) to get real push
-// notifications, which is meaningfully more FFI surface to get right
-// blind (no compiler in the sandbox that wrote this — see the top-level
-// README). Polling every few seconds is simpler, safe at any privilege
-// level, and matches the pattern `collector/process.rs` already uses
-// successfully. Registry persistence changes are not a latency-sensitive
-// signal the way file writes are — a few seconds of detection lag here
-// is an acceptable trade for correctness confidence.
-//
-// SERVICE-CONTEXT CAVEAT (Windows): this reads HKEY_CURRENT_USER
-// directly, which is correct when the agent runs as a normal foreground
-// process in the interactive user's session (today's deployment model).
-// If this agent is ever redeployed as a background Windows Service
-// running as SYSTEM, HKCU would resolve to *SYSTEM's own* hive, not the
-// logged-in user's — reading the real interactive user's HKCU at that
-// point would require impersonating their token first. Flagged here
-// rather than silently wrong later.
+// Linux has no registry, so this watches the handful of well-known
+// files and directories where persistence and security-relevant
+// tampering actually show up: cron, systemd units, `/etc/ld.so.preload`
+// (library-injection persistence), and shell startup scripts. This
+// reuses the same `notify` crate the main filesystem collector already
+// depends on — the right tool for "watch a handful of specific paths
+// for changes," no new dependency needed here.
 
 use crate::telemetry::{Event, EventSender};
-
-#[cfg(windows)]
-pub fn run(tx: EventSender) {
-    use std::collections::HashMap;
-    use std::thread;
-    use std::time::Duration;
-    use winreg::enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, KEY_READ};
-    use winreg::RegKey;
-
-    const POLL_INTERVAL: Duration = Duration::from_secs(5);
-
-    // Chosen to match the architecture doc's own examples almost
-    // verbatim: Run/RunOnce keys (startup persistence), the Defender
-    // real-time-protection policy (a classic pre-encryption disable
-    // step), SafeBoot configuration, and Winlogon Shell/Userinit
-    // (another well-known persistence vector).
-    let watched: &[(winreg::enums::HKEY, &str, &str)] = &[
-        (HKEY_LOCAL_MACHINE, "HKLM", r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"),
-        (HKEY_LOCAL_MACHINE, "HKLM", r"SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"),
-        (HKEY_CURRENT_USER, "HKCU", r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"),
-        (
-            HKEY_LOCAL_MACHINE,
-            "HKLM",
-            r"SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection",
-        ),
-        (HKEY_LOCAL_MACHINE, "HKLM", r"SYSTEM\CurrentControlSet\Control\SafeBoot\Option"),
-        (
-            HKEY_LOCAL_MACHINE,
-            "HKLM",
-            r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon",
-        ),
-    ];
-
-    crate::utils::logger::info(&format!(
-        "[registry] monitor started — polling {} key(s) every {POLL_INTERVAL:?}",
-        watched.len()
-    ));
-
-    // Full key path (e.g. "HKLM\SOFTWARE\...\Run") -> snapshot of that
-    // key's values from the previous poll, so only actual changes emit
-    // events instead of the whole registry state every cycle.
-    let mut previous: HashMap<String, HashMap<String, String>> = HashMap::new();
-
-    loop {
-        for (hive, hive_label, path) in watched {
-            let full_path = format!("{hive_label}\\{path}");
-
-            let root = RegKey::predef(*hive);
-            let subkey = match root.open_subkey_with_flags(path, KEY_READ) {
-                Ok(k) => k,
-                Err(_) => continue, // key doesn't exist on this machine — not an error
-            };
-
-            let mut current: HashMap<String, String> = HashMap::new();
-            for entry in subkey.enum_values() {
-                if let Ok((name, value)) = entry {
-                    current.insert(name, value.to_string());
-                }
-            }
-
-            let prev = previous.get(&full_path);
-
-            // Only emit events once a baseline exists for this key — the
-            // very first poll would otherwise fire an event for every
-            // pre-existing value in every watched key, which is a
-            // one-time noise burst, not a signal. We only care about
-            // *changes* from here on.
-            if let Some(prev_snapshot) = prev {
-                for (name, value) in &current {
-                    let changed = prev_snapshot.get(name) != Some(value);
-                    if changed {
-                        let event = Event::registry_write(full_path.clone(), name.clone());
-                        if tx.try_send(event).is_err() {
-                            crate::utils::logger::warn(
-                                "[registry] telemetry queue full — dropped a RegistryWrite event",
-                            );
-                        }
-                    }
-                }
-            }
-
-            previous.insert(full_path, current);
-        }
-
-        thread::sleep(POLL_INTERVAL);
-    }
-}
 
 #[cfg(target_os = "linux")]
 pub fn run(tx: EventSender) {
@@ -127,9 +16,9 @@ pub fn run(tx: EventSender) {
     use std::path::PathBuf;
     use std::sync::mpsc as std_mpsc;
 
-    // Linux's answer to the Windows branch's Run-keys/Defender-policy/
-    // SafeBoot list: cron, systemd units, ld.so.preload (a classic
-    // library-injection persistence vector), and shell startup scripts.
+    // Well-known Linux persistence vectors worth watching: cron,
+    // systemd units, ld.so.preload (a classic library-injection
+    // persistence vector), and shell startup scripts.
     let mut watched: Vec<(&str, PathBuf)> = vec![
         ("cron.d", PathBuf::from("/etc/cron.d")),
         ("cron.daily", PathBuf::from("/etc/cron.daily")),
@@ -224,10 +113,10 @@ pub fn run(tx: EventSender) {
     }
 }
 
-#[cfg(not(any(windows, target_os = "linux")))]
+#[cfg(not(target_os = "linux"))]
 pub fn run(tx: EventSender) {
     let _ = tx;
     crate::utils::logger::info(
-        "[registry] persistence/registry monitoring is implemented for Windows and Linux only — no-op on this platform",
+        "[registry] persistence monitoring is implemented for Linux only — no-op on this platform",
     );
 }

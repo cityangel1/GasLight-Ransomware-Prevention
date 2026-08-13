@@ -21,12 +21,10 @@
 //     and rotates them periodically so names/content never go stale
 //     enough to fingerprint            [deception/*]
 //
-// Registry/persistence and network monitoring are real on both Windows
-// and Linux (see collector/registry.rs and collector/network.rs for what
-// each platform actually does — the mechanisms are genuinely different,
-// not a reskin). Linux additionally gets collector/fanotify.rs: real,
-// PID-attributed file-write events from user space, something Windows
-// can only get from the kernel driver in driver/ — see that file for
+// Persistence and network monitoring are real on Linux (see
+// collector/registry.rs and collector/network.rs for what each one
+// actually does). Linux additionally gets collector/fanotify.rs: real,
+// PID-attributed file-write events from user space — see that file for
 // why fanotify makes this possible without a kernel module.
 
 // Enforcement (Linux-only, opt-in via gaslight.toml's [enforcement]

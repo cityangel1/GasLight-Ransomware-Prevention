@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="assets/favicon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <title>Get GasLight for Linux</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -41,6 +45,8 @@ code, pre{ font-family:var(--mono); }
 nav{ position:sticky; top:0; z-index:50; background:rgba(10,11,14,0.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--line-soft); }
 nav .wrap{ max-width:1100px; display:flex; align-items:center; justify-content:space-between; height:64px; }
 .brand{ display:flex; align-items:center; gap:9px; font-family:var(--disp); font-weight:800; font-size:14.5px; }
+.brand img{ height:26px; width:auto; display:block; }
+.brand a{ display:flex; align-items:center; }
 .brand svg{ width:18px; height:18px; }
 .brand a{ text-decoration:none; display:flex; align-items:center; gap:9px; }
 .nav-links{ display:flex; gap:26px; font-size:13px; color:var(--text-dim); }
@@ -105,8 +111,7 @@ footer .fine{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint)
 <nav>
   <div class="wrap">
     <div class="brand"><a href="index.html">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c-3 4-6 6.5-6 10.5A6 6 0 0 0 12 19a6 6 0 0 0 6-6.5C18 8.5 15 6 12 2z" fill="#FF7A33"/></svg>
-      GASLIGHT
+      <img src="assets/gaslight-logo-light.png" alt="GasLight">
     </a></div>
     <div class="nav-links">
       <a href="index.html">Home</a>
@@ -157,7 +162,7 @@ cargo test --release</pre>
       <div class="step-num">3</div>
       <div class="step-body">
         <h3>Run it — as root, for full attribution</h3>
-        <p>GasLight's Linux file-write attribution uses <span class="inline-code">fanotify</span>, which needs <span class="inline-code">CAP_SYS_ADMIN</span>. It runs fine without root too — just with reduced attribution, the same tradeoff Windows always has.</p>
+        <p>GasLight's Linux file-write attribution uses <span class="inline-code">fanotify</span>, which needs <span class="inline-code">CAP_SYS_ADMIN</span>. It runs fine without root too — just with reduced attribution.</p>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Run as</th><th>File-write attribution</th></tr></thead>

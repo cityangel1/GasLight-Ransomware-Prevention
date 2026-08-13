@@ -33,7 +33,7 @@ impl Cleanup {
         // reading. Deliberately uses `meta.real_path`, not a path
         // reconstructed from the normalized lookup key — see the comment
         // on `HoneyMetadata::real_path` for why that would silently break
-        // file removal on non-Windows platforms.
+        // file removal.
         let stale: Vec<PathBuf> = {
             let guard = match registry.read() {
                 Ok(g) => g,

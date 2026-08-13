@@ -1,15 +1,15 @@
 // Honey shares (Component 5, optional per the doc).
 //
 // The doc's own framing is explicit: "For a lightweight demo mode, you can
-// simulate network shares" — not "create real SMB shares." Real share
-// creation is a privileged, Windows-specific operation (NetShareAdd) that
-// needs admin rights and, done wrong, is a bigger attack surface than a
+// simulate network shares" — not "create real network shares." Real share
+// creation (NFS exports, Samba shares, etc.) is a privileged operation
+// that needs root and, done wrong, is a bigger attack surface than a
 // smaller one (an actually-shared decoy is reachable over the network by
 // anything that can see the share). Out of scope here, deliberately.
 //
 // What's implemented instead: ordinary local decoy folders whose
-// *display name* (used in logging/dashboard telemetry) looks like a UNC
-// path (\\GasLight\Finance), so the demo narrative matches the doc,
+// *display name* (used in logging/dashboard telemetry) looks like an NFS
+// export path (gaslight:/Finance), so the demo narrative matches the doc,
 // while the actual filesystem object underneath is just a regular local
 // honey directory — same monitoring, same policy-table integration, no
 // elevated privileges or real network exposure required.
@@ -17,7 +17,7 @@
 use std::path::{Path, PathBuf};
 
 pub struct HoneyShare {
-    pub display_name: String, // e.g. "\\GasLight\Finance"
+    pub display_name: String, // e.g. "gaslight:/Finance"
     pub real_path: PathBuf,
 }
 
@@ -32,7 +32,7 @@ impl ShareManager {
             for name in SHARE_NAMES {
                 let real_path = root.join("Shares").join(name);
                 shares.push(HoneyShare {
-                    display_name: format!("\\\\GasLight\\{name}"),
+                    display_name: format!("gaslight:/{name}"),
                     real_path,
                 });
             }

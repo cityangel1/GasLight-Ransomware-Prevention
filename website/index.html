@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="assets/favicon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <title>GasLight — Predict. Deceive. Protect.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -46,6 +50,8 @@ nav{ position:fixed; top:0; left:0; right:0; z-index:50; background:rgba(10,11,1
 nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:68px; }
 .brand{ display:flex; align-items:center; gap:9px; font-family:var(--disp); font-weight:800; font-size:15px; letter-spacing:0.02em; }
 .brand svg{ width:19px; height:19px; }
+.brand img{ height:26px; width:auto; display:block; }
+footer .brand img{ height:20px; }
 .nav-links{ display:flex; gap:30px; font-size:13px; color:var(--text-dim); font-weight:500; }
 .nav-links a{ transition:color .15s; }
 .nav-links a:hover{ color:var(--text); }
@@ -173,8 +179,7 @@ footer .foot-links a:hover{ color:var(--text); }
 <nav>
   <div class="wrap">
     <div class="brand">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c-3 4-6 6.5-6 10.5A6 6 0 0 0 12 19a6 6 0 0 0 6-6.5C18 8.5 15 6 12 2z" fill="#FF7A33"/></svg>
-      GASLIGHT
+      <img src="assets/gaslight-logo-light.png" alt="GasLight">
     </div>
     <div class="nav-links">
       <a href="architecture.html">Architecture</a>
@@ -232,7 +237,7 @@ footer .foot-links a:hover{ color:var(--text); }
       <div class="pillar">
         <div class="n">01</div>
         <h3>Endpoint Agent</h3>
-        <p>Watches process, filesystem, registry, and network activity — cross-platform, with PID-attributed file writes on both Windows and Linux.</p>
+        <p>Watches process, filesystem, persistence, and network activity — with PID-attributed file writes on Linux.</p>
       </div>
       <div class="pillar">
         <div class="n">02</div>
@@ -280,7 +285,7 @@ footer .foot-links a:hover{ color:var(--text); }
 
 <footer>
   <div class="wrap">
-    <div class="brand"><svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><path d="M12 2c-3 4-6 6.5-6 10.5A6 6 0 0 0 12 19a6 6 0 0 0 6-6.5C18 8.5 15 6 12 2z" fill="#86868D"/></svg>GASLIGHT</div>
+    <div class="brand"><img src="assets/gaslight-logo-light.png" alt="GasLight"></div>
     <div class="foot-links">
       <a href="architecture.html">Architecture</a>
       <a href="dashboard.html">Dashboard</a>

@@ -2,166 +2,15 @@
 //
 // Useful signal (ransomware frequently reaches out to key servers, TOR
 // exit nodes, or C2/payment infrastructure right before or during
-// encryption). Implemented for real on both platforms this project
-// targets:
-//   - Windows: `GetExtendedTcpTable` (iphlpapi.dll) — connections come
-//     with their owning PID built in.
-//   - Linux: `/proc/net/tcp` (connection table, no PID) cross-referenced
-//     against every process's `/proc/<pid>/fd/*` entries (which PID
-//     matches which connection, via the socket's inode number) — the
-//     same technique `netstat`/`ss` use under the hood. No new crate
-//     needed, pure `std::fs`.
+// encryption). Uses `/proc/net/tcp` (connection table, no PID)
+// cross-referenced against every process's `/proc/<pid>/fd/*` entries
+// (which PID matches which connection, via the socket's inode number) —
+// the same technique `netstat`/`ss` use under the hood. No new crate
+// needed, pure `std::fs`.
 //
 // Any other platform stays a no-op — see the tail of this file.
 
 use crate::telemetry::EventSender;
-
-#[cfg(windows)]
-pub fn run(tx: EventSender) {
-    use crate::telemetry::Event;
-    use std::collections::HashSet;
-    use std::ffi::c_void;
-    use std::thread;
-    use std::time::Duration;
-
-    const POLL_INTERVAL: Duration = Duration::from_secs(3);
-    const AF_INET: u32 = 2;
-    const TCP_TABLE_OWNER_PID_ALL: u32 = 5;
-    const ERROR_INSUFFICIENT_BUFFER: u32 = 122;
-    const NO_ERROR: u32 = 0;
-
-    #[repr(C)]
-    #[derive(Clone, Copy)]
-    struct MibTcpRowOwnerPid {
-        state: u32,
-        local_addr: u32,
-        local_port: u32,
-        remote_addr: u32,
-        remote_port: u32,
-        owning_pid: u32,
-    }
-
-    #[link(name = "iphlpapi")]
-    extern "system" {
-        fn GetExtendedTcpTable(
-            tcp_table: *mut c_void,
-            size: *mut u32,
-            order: i32,
-            af: u32,
-            table_class: u32,
-            reserved: u32,
-        ) -> u32;
-    }
-
-    fn format_ipv4(raw: u32) -> String {
-        // The DWORD's in-memory bytes (little-endian host) are already
-        // the four address octets in order — see the module doc comment
-        // for the worked example confirming this.
-        let b = raw.to_le_bytes();
-        format!("{}.{}.{}.{}", b[0], b[1], b[2], b[3])
-    }
-
-    fn read_port(raw: u32) -> u16 {
-        // Low 16 bits hold the port in network byte order.
-        u16::from_be((raw & 0xFFFF) as u16)
-    }
-
-    crate::utils::logger::info(&format!(
-        "[network] monitor started — polling established TCP connections every {POLL_INTERVAL:?}"
-    ));
-
-    let mut seen: HashSet<(u32, u32, u16, u32)> = HashSet::new(); // (pid, remote_addr, remote_port, local_port)
-
-    loop {
-        // First call: pass a null buffer to learn the required size.
-        let mut size: u32 = 0;
-        let ret = unsafe {
-            GetExtendedTcpTable(
-                std::ptr::null_mut(),
-                &mut size,
-                0,
-                AF_INET,
-                TCP_TABLE_OWNER_PID_ALL,
-                0,
-            )
-        };
-
-        if ret != ERROR_INSUFFICIENT_BUFFER || size == 0 {
-            crate::utils::logger::warn(&format!(
-                "[network] GetExtendedTcpTable size query failed (ret={ret}) — retrying next cycle"
-            ));
-            thread::sleep(POLL_INTERVAL);
-            continue;
-        }
-
-        // Allocate as Vec<u32> rather than Vec<u8> so the buffer is
-        // guaranteed 4-byte aligned for the MibTcpRowOwnerPid reads below
-        // — a Vec<u8> allocation's *type* only guarantees 1-byte
-        // alignment even though most allocators happen to over-align in
-        // practice, which isn't something safe code should rely on.
-        let word_count = (size as usize + 3) / 4;
-        let mut buffer: Vec<u32> = vec![0u32; word_count];
-
-        let ret = unsafe {
-            GetExtendedTcpTable(
-                buffer.as_mut_ptr() as *mut c_void,
-                &mut size,
-                0,
-                AF_INET,
-                TCP_TABLE_OWNER_PID_ALL,
-                0,
-            )
-        };
-
-        if ret != NO_ERROR {
-            crate::utils::logger::warn(&format!(
-                "[network] GetExtendedTcpTable fetch failed (ret={ret}) — retrying next cycle"
-            ));
-            thread::sleep(POLL_INTERVAL);
-            continue;
-        }
-
-        let num_entries = buffer[0] as usize;
-        // SAFETY: `buffer` was sized from the exact byte count
-        // GetExtendedTcpTable itself reported as required, the call
-        // above returned NO_ERROR (meaning it filled `num_entries` full
-        // rows starting right after the header DWORD), and the pointer
-        // is 4-byte aligned because `buffer` is a `Vec<u32>` — matching
-        // `MibTcpRowOwnerPid`'s alignment requirement exactly.
-        let rows: &[MibTcpRowOwnerPid] = unsafe {
-            std::slice::from_raw_parts(buffer.as_ptr().add(1) as *const MibTcpRowOwnerPid, num_entries)
-        };
-
-        for row in rows {
-            if read_port(row.remote_port) == 0 {
-                continue; // listening socket, not an outbound connection
-            }
-
-            let key = (row.owning_pid, row.remote_addr, read_port(row.remote_port), read_port(row.local_port));
-            if seen.insert(key) {
-                let pid = if row.owning_pid == 0 { None } else { Some(row.owning_pid) };
-                let event = Event::network_connect(pid, format_ipv4(row.remote_addr), read_port(row.remote_port));
-                if tx.try_send(event).is_err() {
-                    crate::utils::logger::warn(
-                        "[network] telemetry queue full — dropped a NetworkConnect event",
-                    );
-                }
-            }
-        }
-
-        // Bound memory growth — a long-running agent shouldn't accumulate
-        // every connection ever seen forever. Simple full reset rather
-        // than a time-windowed structure; the cost is that a connection
-        // which drops and immediately reconnects after a reset could
-        // re-fire once more than strictly necessary, which is harmless
-        // for a telemetry signal like this.
-        if seen.len() > 10_000 {
-            seen.clear();
-        }
-
-        thread::sleep(POLL_INTERVAL);
-    }
-}
 
 #[cfg(target_os = "linux")]
 pub fn run(tx: EventSender) {
@@ -318,11 +167,11 @@ fn build_inode_pid_map() -> std::collections::HashMap<u64, u32> {
     map
 }
 
-#[cfg(not(any(windows, target_os = "linux")))]
+#[cfg(not(target_os = "linux"))]
 pub fn run(tx: EventSender) {
     let _ = tx;
     crate::utils::logger::info(
-        "[network] network monitor implemented for Windows and Linux only — no-op on this platform",
+        "[network] network monitor is implemented for Linux only — no-op on this platform",
     );
     // Park this thread rather than busy-looping or exiting, so it behaves
     // like the other collector threads on platforms with an implementation.

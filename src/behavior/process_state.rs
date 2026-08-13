@@ -2,8 +2,8 @@
 // architecture doc. Lifetime counters (writes, renames, deletes, ...) are
 // kept for display purposes; actual scoring always goes through the
 // sliding-window methods below, never the lifetime totals directly — see
-// the doc's "Time Windows" section on why (an 8-hour Word session
-// shouldn't score the same as a 2-second encryption burst).
+// the doc's "Time Windows" section on why (an 8-hour document-editing
+// session shouldn't score the same as a 2-second encryption burst).
 
 use crate::behavior::entropy::EntropyTracker;
 use serde::Serialize;

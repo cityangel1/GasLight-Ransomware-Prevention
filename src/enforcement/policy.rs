@@ -1,10 +1,8 @@
 // Enforcement policy state.
 //
 // Deliberately minimal: a set of "currently blocked" PIDs, not a richer
-// per-path policy table. The Windows filter driver (driver/policy.c) has
-// a proper Allow/Monitor/Block/Redirect/Terminate table because it's
-// enforcing fine-grained decisions from a separate kernel module. Here,
-// the enforcement decision is binary and already made by
+// per-path policy table. Here, the enforcement decision is binary and
+// already made by
 // `behavior/response.rs` before this is ever touched: a PID is either
 // blocked from opening files under the watched paths, or it isn't. A
 // `HashSet<u32>` is the simplest thing that's still correct, and simple

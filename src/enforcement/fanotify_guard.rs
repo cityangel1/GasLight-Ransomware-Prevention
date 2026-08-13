@@ -10,10 +10,9 @@
 // until this code writes a response back — ALLOW or DENY. If a response
 // is never sent, that `open()` call hangs *forever*. This is a
 // structurally more dangerous failure mode than anything else in this
-// project: a bug in the Windows kernel driver could crash the machine
-// (bad, but visible and diagnosable); a bug here can silently hang any
-// process trying to open a file under a watched path, indefinitely, with
-// no crash and no obvious error message pointing at this agent.
+// project: a bug here can silently hang any process trying to open a
+// file under a watched path, indefinitely, with no crash and no obvious
+// error message pointing at this agent.
 //
 // Mitigations built into this file, in priority order:
 //   1. Every code path guarantees exactly one response is sent. There is

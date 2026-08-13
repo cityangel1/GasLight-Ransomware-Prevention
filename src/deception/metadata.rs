@@ -26,14 +26,11 @@ pub struct HoneyMetadata {
     /// the manager needs to know what a tag maps back to).
     pub template_tag: String,
     pub is_directory: bool,
-    /// The real, OS-native filesystem path — deliberately kept alongside
-    /// the normalized lookup key rather than reconstructed from it.
-    /// Normalization (lowercase, `/` -> `\`) is a one-way canonicalization
-    /// for matching purposes only; reconstructing a path from it and
-    /// handing that to `std::fs::remove_file` would silently do the wrong
-    /// thing on any platform where `\` isn't a real path separator
-    /// (Linux/macOS would treat "watched\finance\payroll.xlsx" as a
-    /// single literal filename, not a three-level path).
+    /// The real filesystem path — deliberately kept alongside the
+    /// normalized lookup key rather than reconstructed from it.
+    /// Normalization (lowercasing) is a one-way canonicalization for
+    /// matching purposes only; the original path is what actually gets
+    /// handed to `std::fs::remove_file`.
     pub real_path: PathBuf,
 }
 
@@ -101,18 +98,15 @@ impl HoneyRegistry {
     }
 }
 
-/// Normalizes a path to a stable lookup key: backslash/forward-slash
-/// unified and lowercased. Applied identically on both insert and lookup,
-/// so it works as a canonical form regardless of which platform generated
-/// the path or which platform is now querying it — important since this
-/// agent is developed and tested cross-platform (see the top-level
-/// README) even though its primary target is Windows.
+/// Normalizes a path to a stable lookup key: lowercased. Applied
+/// identically on both insert and lookup, so it works as a canonical
+/// form regardless of case differences in how a path was written.
 fn normalize(path: &Path) -> String {
     normalize_str(&path.to_string_lossy())
 }
 
 fn normalize_str(path: &str) -> String {
-    path.replace('/', "\\").to_lowercase()
+    path.to_lowercase()
 }
 
 #[cfg(test)]
@@ -127,35 +121,35 @@ mod tests {
             last_refresh_ms: 0,
             template_tag: "payroll_spreadsheet".to_string(),
             is_directory: false,
-            real_path: PathBuf::from("C:\\Users\\alice\\Finance\\Payroll.xlsx"),
+            real_path: PathBuf::from("/home/alice/Finance/Payroll.xlsx"),
         }
     }
 
     #[test]
-    fn lookup_is_case_and_separator_insensitive() {
+    fn lookup_is_case_insensitive() {
         let mut registry = HoneyRegistry::new();
-        registry.insert(Path::new("C:\\Users\\alice\\Finance\\Payroll.xlsx"), sample_metadata());
+        registry.insert(Path::new("/home/alice/Finance/Payroll.xlsx"), sample_metadata());
 
-        assert!(registry.contains("c:/users/alice/finance/payroll.xlsx"));
-        assert!(registry.contains("C:\\USERS\\ALICE\\FINANCE\\PAYROLL.XLSX"));
+        assert!(registry.contains("/home/alice/finance/payroll.xlsx"));
+        assert!(registry.contains("/HOME/ALICE/FINANCE/PAYROLL.XLSX"));
     }
 
     #[test]
     fn unrelated_path_is_not_a_decoy() {
         let mut registry = HoneyRegistry::new();
-        registry.insert(Path::new("C:\\Finance\\Payroll.xlsx"), sample_metadata());
+        registry.insert(Path::new("/home/alice/Finance/Payroll.xlsx"), sample_metadata());
 
-        assert!(!registry.contains("C:\\Finance\\QuarterlyReport.xlsx"));
+        assert!(!registry.contains("/home/alice/Finance/QuarterlyReport.xlsx"));
     }
 
     #[test]
-    fn substring_of_a_real_word_document_no_longer_false_positives() {
+    fn substring_of_a_real_document_no_longer_false_positives() {
         // The old marker-based approach checked whether a path *contained*
         // a string like "confidential" — which would misfire on something
-        // like "C:\Projects\confidential_review_process.docx" that was
-        // never actually deployed as a decoy. Exact-path lookup doesn't
-        // have this problem.
+        // like "/home/alice/Projects/confidential_review_process.docx"
+        // that was never actually deployed as a decoy. Exact-path lookup
+        // doesn't have this problem.
         let registry = HoneyRegistry::new();
-        assert!(!registry.contains("C:\\Projects\\confidential_review_process.docx"));
+        assert!(!registry.contains("/home/alice/Projects/confidential_review_process.docx"));
     }
 }
