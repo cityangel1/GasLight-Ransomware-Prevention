@@ -955,23 +955,27 @@ connect();
 
 /* ============ Demo Mode — scripted attack, fed through the SAME
    handleMessage() as real telemetry, so every panel above is proven to
-   work end-to-end without needing the live Rust agent running. ============ */
+   work end-to-end without needing the live Rust agent running. Mirrors
+   the RansomEXX (Linux) profile used in architecture.html's scorer:
+   ~58 writes/sec, ~7.91 entropy, a honeypot hit, and files renamed to a
+   hardcoded per-victim extension — no snapshot-deletion attempt, since
+   RansomEXX's real Linux payload skips that entirely. ============ */
 const DEMO_PID = 4417;
 function buildDemoScript(){
   const steps = [];
-  steps.push({event:{type:'ProcessStart', pid:DEMO_PID, parent_pid:1044, image:'wannacry_payload.bin', cmdline:'wannacry_payload.bin --silent', timestamp_ms:Date.now()}, report:null, honey_event:null});
+  steps.push({event:{type:'ProcessStart', pid:DEMO_PID, parent_pid:1044, image:'svc-new', cmdline:'./svc-new --path /mnt/data', timestamp_ms:Date.now()}, report:null, honey_event:null});
   const reasonSets = [
     {score:5, level:'Safe', decision:'Allow', reasons:[]},
-    {score:22, level:'Monitor', decision:'Monitor', reasons:['12 file writes/sec (+8 pts)']},
-    {score:58, level:'Warning', decision:'Alert', reasons:['41 file writes/sec (+24 pts)', 'entropy spiked to 7.94 (+20 pts)']},
-    {score:91, level:'Critical', decision:'ProtectFilesystem', reasons:['62 file writes/sec (+25 pts)', 'entropy spiked to 7.96 (+20 pts)', '6 files renamed to suspicious extensions (+15 pts)', 'accessed a honeypot file (+40 pts)']},
+    {score:22, level:'Monitor', decision:'Monitor', reasons:['14 file writes/sec (+9 pts)']},
+    {score:58, level:'Warning', decision:'Alert', reasons:['39 file writes/sec (+22 pts)', 'entropy spiked to 7.88 (+19 pts)']},
+    {score:91, level:'Critical', decision:'ProtectFilesystem', reasons:['58 file writes/sec (+25 pts)', 'entropy spiked to 7.91 (+20 pts)', 'files renamed to a hardcoded per-victim extension (+15 pts)', 'accessed a honeypot file (+40 pts)']},
   ];
   reasonSets.forEach((r, i) => {
-    steps.push({event:{type:'FileWrite', pid:DEMO_PID, path:'/home/alice/Documents/Financial/Payroll_2026_Q1.xlsx', size_bytes:284112, entropy: i < 2 ? 3.4 : 7.95, timestamp_ms: Date.now()}, report:{pid:DEMO_PID, process_name:'wannacry_payload.bin', score:r.score, risk_level:r.level, decision:r.decision, reasons:r.reasons}, honey_event:null});
+    steps.push({event:{type:'FileWrite', pid:DEMO_PID, path:'/home/alice/Documents/Financial/Payroll_2026_Q1.xlsx', size_bytes:284112, entropy: i < 2 ? 3.4 : 7.9, timestamp_ms: Date.now()}, report:{pid:DEMO_PID, process_name:'svc-new', score:r.score, risk_level:r.level, decision:r.decision, reasons:r.reasons}, honey_event:null});
   });
   steps.push({event:{type:'FileWrite', pid:DEMO_PID, path:'/home/alice/Documents/Finance/Payroll_2026_Q1.xlsx', size_bytes:9200, entropy:7.9, timestamp_ms:Date.now()}, report:null, honey_event:{pid:DEMO_PID, path:'/home/alice/Documents/Finance/Payroll_2026_Q1.xlsx', operation:'Write', honey_id:7, timestamp_ms:Date.now()}});
-  steps.push({event:{type:'FileWrite', pid:DEMO_PID, path:'', size_bytes:0, entropy:7.96, timestamp_ms:Date.now()}, report:{pid:DEMO_PID, process_name:'wannacry_payload.bin', score:96, risk_level:'Critical', decision:'Terminate', reasons:['62 file writes/sec (+25 pts)', 'entropy spiked to 7.96 (+20 pts)', '6 files renamed to suspicious extensions (+15 pts)', 'accessed a honeypot file (+40 pts)']}, honey_event:null});
-  steps.push({event:{type:'ProcessExit', pid:DEMO_PID, image:'wannacry_payload.bin', timestamp_ms:Date.now()}, report:null, honey_event:null});
+  steps.push({event:{type:'FileWrite', pid:DEMO_PID, path:'', size_bytes:0, entropy:7.91, timestamp_ms:Date.now()}, report:{pid:DEMO_PID, process_name:'svc-new', score:96, risk_level:'Critical', decision:'Terminate', reasons:['58 file writes/sec (+25 pts)', 'entropy spiked to 7.91 (+20 pts)', 'files renamed to a hardcoded per-victim extension (+15 pts)', 'accessed a honeypot file (+40 pts)']}, honey_event:null});
+  steps.push({event:{type:'ProcessExit', pid:DEMO_PID, image:'svc-new', timestamp_ms:Date.now()}, report:null, honey_event:null});
   return steps;
 }
 

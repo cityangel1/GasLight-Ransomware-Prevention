@@ -73,7 +73,7 @@ install.
    update.
 
 No agent running? Click **"Run Demo Attack"** — a scripted
-`wannacry_payload.bin` incident plays through the exact same rendering
+`svc-new` (RansomEXX-Linux-profile) incident plays through the exact same rendering
 pipeline as real telemetry (same `handleMessage()` function, same wire
 format), so the whole dashboard is provable without needing malware, a
 live agent, or even a network connection.
