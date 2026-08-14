@@ -49,7 +49,7 @@ pub fn real_paths(shares: &[HoneyShare]) -> Vec<PathBuf> {
 }
 
 #[allow(dead_code)]
-pub fn display_name_for(shares: &[HoneyShare], real_path: &Path) -> Option<&str> {
+pub fn display_name_for<'a>(shares: &'a [HoneyShare], real_path: &Path) -> Option<&'a str> {
     shares
         .iter()
         .find(|s| s.real_path == real_path)
