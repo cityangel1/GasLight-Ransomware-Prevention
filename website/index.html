@@ -155,6 +155,14 @@ section{ padding:100px 0; }
 .stat .v{ font-family:var(--disp); font-size:36px; font-weight:700; color:var(--flame); }
 .stat .l{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.07em; margin-top:4px; }
 
+/* ============ DEMO VIDEO ============ */
+.video-frame{
+  max-width:900px; margin:0 auto; border-radius:16px; overflow:hidden;
+  border:1px solid var(--line); background:var(--panel);
+  box-shadow:0 24px 60px -20px rgba(0,0,0,0.55);
+}
+.video-frame video{ display:block; width:100%; height:auto; background:#000; }
+
 /* ============ CTA BAND ============ */
 .cta-band{
   background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:56px 40px; text-align:center;
@@ -185,6 +193,7 @@ footer .foot-links a:hover{ color:var(--text); }
       <a href="architecture.html">Architecture</a>
       <a href="dashboard.html">Dashboard</a>
       <a href="get-linux.html">Linux</a>
+      <a href="#demo">Demo Video</a>
             <a href="https://github.com/cityangel1/GasLight-Ransomware-Prevention" target="_blank" rel="noopener">GitHub</a>
     </div>
     <div class="nav-cta">
@@ -269,6 +278,22 @@ footer .foot-links a:hover{ color:var(--text); }
   </div>
 </section>
 
+<section id="demo">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-num">Watch it work</span>
+      <h2>Demo Video</h2>
+      <p>See GasLight detect, deceive, and stop a simulated ransomware run in real time.</p>
+    </div>
+    <div class="video-frame">
+      <video controls preload="metadata" playsinline>
+        <source src="assets/demo-video.mp4" type="video/mp4">
+        Your browser doesn't support embedded video. <a href="assets/demo-video.mp4">Download the demo video</a> instead.
+      </video>
+    </div>
+  </div>
+</section>
+
 <section>
   <div class="cta-band">
     <h2>Get GasLight running on your machine.</h2>
@@ -290,6 +315,7 @@ footer .foot-links a:hover{ color:var(--text); }
       <a href="architecture.html">Architecture</a>
       <a href="dashboard.html">Dashboard</a>
       <a href="get-linux.html">Linux</a>
+      <a href="#demo">Demo Video</a>
             <a href="https://github.com/cityangel1/GasLight-Ransomware-Prevention" target="_blank" rel="noopener">GitHub</a>
     </div>
     <div class="fine">Predict. Deceive. Protect.</div>
